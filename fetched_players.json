@@ -1,68 +1,68 @@
 {
   "ToromBot": {
-    "games_fetched": 9990,
-    "last_fetch": "2025-08-14T10:47:33.524526",
-    "total_games_fetched": 9990
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:05:53.960825",
+    "total_games_fetched": 10050
   },
   "Weiawaga": {
-    "games_fetched": 9990,
-    "last_fetch": "2025-08-14T10:53:24.028972",
-    "total_games_fetched": 9990
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:00.437563",
+    "total_games_fetched": 10050
   },
   "RaspFish": {
-    "games_fetched": 9989,
-    "last_fetch": "2025-08-14T10:59:11.066764",
-    "total_games_fetched": 9989
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:06.917603",
+    "total_games_fetched": 10049
   },
   "YoBot_v2": {
-    "games_fetched": 9990,
-    "last_fetch": "2025-08-14T11:04:51.901433",
-    "total_games_fetched": 9990
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:13.343815",
+    "total_games_fetched": 10050
   },
   "ArasanX": {
-    "games_fetched": 9990,
-    "last_fetch": "2025-08-14T11:10:32.915043",
-    "total_games_fetched": 9990
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:19.772061",
+    "total_games_fetched": 10050
   },
   "ResoluteBot": {
-    "games_fetched": 9399,
-    "last_fetch": "2025-08-14T11:16:27.998978",
-    "total_games_fetched": 9399
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:26.283981",
+    "total_games_fetched": 9459
   },
   "duchessAI": {
-    "games_fetched": 9989,
-    "last_fetch": "2025-08-14T11:22:07.445938",
-    "total_games_fetched": 9989
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:32.651741",
+    "total_games_fetched": 10049
   },
   "pawn_git": {
-    "games_fetched": 6307,
-    "last_fetch": "2025-08-14T11:26:05.147966",
-    "total_games_fetched": 6307
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:39.006640",
+    "total_games_fetched": 6367
   },
   "odonata-bot": {
-    "games_fetched": 9788,
-    "last_fetch": "2025-08-14T11:31:39.049979",
-    "total_games_fetched": 9788
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:45.364159",
+    "total_games_fetched": 9848
   },
   "bot_adario": {
-    "games_fetched": 6097,
-    "last_fetch": "2025-08-14T11:35:08.607285",
-    "total_games_fetched": 6097
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:51.729577",
+    "total_games_fetched": 6157
   },
   "PZChessBot": {
-    "games_fetched": 5846,
-    "last_fetch": "2025-08-14T11:38:28.332225",
-    "total_games_fetched": 5846
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:06:57.996051",
+    "total_games_fetched": 5906
   },
   "bot64jaques": {
-    "games_fetched": 3725,
-    "last_fetch": "2025-08-14T11:40:36.601074",
-    "total_games_fetched": 3725
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:07:04.274268",
+    "total_games_fetched": 3785
   },
   "Cheszter": {
-    "games_fetched": 489,
-    "last_fetch": "2025-08-14T11:40:55.433796",
-    "total_games_fetched": 489
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:07:10.571887",
+    "total_games_fetched": 549
   },
   "MaggiChess16": {
     "games_fetched": 522,
@@ -75,9 +75,9 @@
     "total_games_fetched": 209
   },
   "cinder-bot": {
-    "games_fetched": 2762,
-    "last_fetch": "2025-08-14T11:43:04.608875",
-    "total_games_fetched": 2762
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:07:21.339854",
+    "total_games_fetched": 2822
   },
   "InvinxibleFlxsh": {
     "games_fetched": 1616,
@@ -90,14 +90,14 @@
     "total_games_fetched": 724
   },
   "Classic_BOT-v2": {
-    "games_fetched": 137,
-    "last_fetch": "2025-08-14T11:44:49.742171",
-    "total_games_fetched": 137
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:07:32.063014",
+    "total_games_fetched": 197
   },
   "BOT_Stockfish13": {
-    "games_fetched": 49,
-    "last_fetch": "2025-08-14T11:44:53.608769",
-    "total_games_fetched": 49
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:07:38.308897",
+    "total_games_fetched": 109
   },
   "Exogenetic-Bot": {
     "games_fetched": 0,
@@ -110,9 +110,9 @@
     "total_games_fetched": 255
   },
   "Alexandrya": {
-    "games_fetched": 133,
-    "last_fetch": "2025-08-14T11:45:13.455437",
-    "total_games_fetched": 133
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:07:49.012215",
+    "total_games_fetched": 193
   },
   "Gold_Engine": {
     "games_fetched": 64,
@@ -120,59 +120,59 @@
     "total_games_fetched": 64
   },
   "OliThink-5": {
-    "games_fetched": 39,
-    "last_fetch": "2025-08-14T11:45:46.677800",
-    "total_games_fetched": 39
-  },
-  "Lynx_BOT": {
-    "games_fetched": 9988,
-    "last_fetch": "2025-08-14T11:51:29.056315",
-    "total_games_fetched": 9988
-  },
-  "Boris-Trapsky": {
-    "games_fetched": 9989,
-    "last_fetch": "2025-08-14T11:57:30.650800",
-    "total_games_fetched": 9989
-  },
-  "InanisBot": {
-    "games_fetched": 9989,
-    "last_fetch": "2025-08-14T12:03:25.664257",
-    "total_games_fetched": 9989
-  },
-  "Pap-G": {
-    "games_fetched": 479,
-    "last_fetch": "2025-08-14T12:04:08.472171",
-    "total_games_fetched": 479
-  },
-  "ilqar_7474": {
-    "games_fetched": 1233,
-    "last_fetch": "2025-08-14T12:05:59.659778",
-    "total_games_fetched": 1233
-  },
-  "Rakhmanov_Aleksandr": {
-    "games_fetched": 504,
-    "last_fetch": "2025-08-14T12:06:19.112719",
-    "total_games_fetched": 504
-  },
-  "yuuki-asuna": {
-    "games_fetched": 160,
-    "last_fetch": "2025-08-14T12:06:26.939118",
-    "total_games_fetched": 160
-  },
-  "Kurald_Galain": {
-    "games_fetched": 1077,
-    "last_fetch": "2025-08-14T12:07:05.530623",
-    "total_games_fetched": 1077
-  },
-  "BiletskiyDanylo": {
-    "games_fetched": 99,
-    "last_fetch": "2025-08-14T12:07:11.115525",
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:01.918167",
     "total_games_fetched": 99
   },
+  "Lynx_BOT": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:08.430659",
+    "total_games_fetched": 10048
+  },
+  "Boris-Trapsky": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:14.836568",
+    "total_games_fetched": 10049
+  },
+  "InanisBot": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:21.189718",
+    "total_games_fetched": 10049
+  },
+  "Pap-G": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:27.898210",
+    "total_games_fetched": 539
+  },
+  "ilqar_7474": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:34.194121",
+    "total_games_fetched": 1293
+  },
+  "Rakhmanov_Aleksandr": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:40.619122",
+    "total_games_fetched": 564
+  },
+  "yuuki-asuna": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:46.910247",
+    "total_games_fetched": 220
+  },
+  "Kurald_Galain": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:53.206528",
+    "total_games_fetched": 1137
+  },
+  "BiletskiyDanylo": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:08:59.822508",
+    "total_games_fetched": 159
+  },
   "Sharkfang": {
-    "games_fetched": 1608,
-    "last_fetch": "2025-08-14T12:08:31.174309",
-    "total_games_fetched": 1608
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:09:08.121726",
+    "total_games_fetched": 1668
   },
   "einstein_79": {
     "games_fetched": 99,
@@ -180,29 +180,29 @@
     "total_games_fetched": 99
   },
   "Arteler": {
-    "games_fetched": 308,
-    "last_fetch": "2025-08-14T12:08:49.955204",
-    "total_games_fetched": 308
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:09:16.632113",
+    "total_games_fetched": 368
   },
   "chessmem": {
-    "games_fetched": 637,
-    "last_fetch": "2025-08-14T12:09:14.181006",
-    "total_games_fetched": 637
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:09:23.917008",
+    "total_games_fetched": 697
   },
   "Aristarch_Kukuev": {
-    "games_fetched": 369,
-    "last_fetch": "2025-08-14T12:09:28.853351",
-    "total_games_fetched": 369
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:09:30.227475",
+    "total_games_fetched": 429
   },
   "MatthewG-p4p": {
-    "games_fetched": 532,
-    "last_fetch": "2025-08-14T12:09:49.458002",
-    "total_games_fetched": 532
+    "games_fetched": 58,
+    "last_fetch": "2026-10-13T21:09:36.577801",
+    "total_games_fetched": 590
   },
   "Cf3paraCg1": {
-    "games_fetched": 453,
-    "last_fetch": "2025-08-14T12:10:07.037700",
-    "total_games_fetched": 453
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:09:42.997484",
+    "total_games_fetched": 513
   },
   "byebob": {
     "games_fetched": 428,
@@ -215,59 +215,59 @@
     "total_games_fetched": 114
   },
   "Svuezoz": {
-    "games_fetched": 173,
-    "last_fetch": "2025-08-14T12:11:18.713810",
-    "total_games_fetched": 173
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:09:53.766992",
+    "total_games_fetched": 233
   },
   "Frankeinsteinzombie": {
-    "games_fetched": 348,
-    "last_fetch": "2025-08-14T12:11:32.807334",
-    "total_games_fetched": 348
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:00.047650",
+    "total_games_fetched": 408
   },
   "Andrey11976": {
-    "games_fetched": 1341,
-    "last_fetch": "2025-08-14T12:15:08.897193",
-    "total_games_fetched": 1341
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:12.829724",
+    "total_games_fetched": 1401
   },
   "LittlePumpkin": {
-    "games_fetched": 1937,
-    "last_fetch": "2025-08-14T12:17:11.398720",
-    "total_games_fetched": 1937
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:21.345542",
+    "total_games_fetched": 1997
   },
   "snakeice": {
-    "games_fetched": 83,
-    "last_fetch": "2025-08-14T12:17:16.696772",
-    "total_games_fetched": 83
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:27.639423",
+    "total_games_fetched": 143
   },
   "sotirakis": {
-    "games_fetched": 2107,
-    "last_fetch": "2025-08-14T12:18:33.452413",
-    "total_games_fetched": 2107
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:34.000387",
+    "total_games_fetched": 2167
   },
   "bearhardy": {
-    "games_fetched": 592,
-    "last_fetch": "2025-08-14T12:18:55.578455",
-    "total_games_fetched": 592
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:40.290752",
+    "total_games_fetched": 652
   },
   "NorthWind05": {
-    "games_fetched": 982,
-    "last_fetch": "2025-08-14T12:19:30.983422",
-    "total_games_fetched": 982
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:46.921675",
+    "total_games_fetched": 1042
   },
   "Anonimous-1981": {
-    "games_fetched": 315,
-    "last_fetch": "2025-08-14T12:19:43.999098",
-    "total_games_fetched": 315
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:53.220421",
+    "total_games_fetched": 375
   },
   "Herobrine_Undefeated": {
-    "games_fetched": 65,
-    "last_fetch": "2025-08-14T12:19:48.401462",
-    "total_games_fetched": 65
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:59.449459",
+    "total_games_fetched": 125
   },
   "IDISJUDA": {
-    "games_fetched": 2900,
-    "last_fetch": "2025-08-14T12:21:30.784172",
-    "total_games_fetched": 2900
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:06.069633",
+    "total_games_fetched": 2960
   },
   "ChessGenius-Alphazeo": {
     "games_fetched": 60,
@@ -275,14 +275,14 @@
     "total_games_fetched": 60
   },
   "shidfar2007": {
-    "games_fetched": 1234,
-    "last_fetch": "2025-08-14T12:22:19.000496",
-    "total_games_fetched": 1234
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:14.594900",
+    "total_games_fetched": 1294
   },
   "Hossein_MZ": {
-    "games_fetched": 633,
-    "last_fetch": "2025-08-14T12:22:43.225815",
-    "total_games_fetched": 633
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:20.879155",
+    "total_games_fetched": 693
   },
   "AllGunsBlazing22": {
     "games_fetched": 316,
@@ -290,19 +290,19 @@
     "total_games_fetched": 316
   },
   "interestinglandscape": {
-    "games_fetched": 415,
-    "last_fetch": "2025-08-14T12:23:12.406826",
-    "total_games_fetched": 415
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:29.472644",
+    "total_games_fetched": 475
   },
   "OjaiJoao": {
-    "games_fetched": 5579,
-    "last_fetch": "2025-08-14T12:26:24.189084",
-    "total_games_fetched": 5579
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:36.831038",
+    "total_games_fetched": 5639
   },
   "OpeningScientist": {
-    "games_fetched": 646,
-    "last_fetch": "2025-08-14T12:26:48.190888",
-    "total_games_fetched": 646
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:43.063172",
+    "total_games_fetched": 706
   },
   "A-X-L": {
     "games_fetched": 3308,
@@ -310,19 +310,19 @@
     "total_games_fetched": 3308
   },
   "NedamReddam": {
-    "games_fetched": 1053,
-    "last_fetch": "2025-08-14T12:29:32.565435",
-    "total_games_fetched": 1053
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:51.641256",
+    "total_games_fetched": 1113
   },
   "Mazen_Ahmed2008": {
-    "games_fetched": 104,
-    "last_fetch": "2025-08-14T12:29:38.291282",
-    "total_games_fetched": 104
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:11:57.869308",
+    "total_games_fetched": 164
   },
   "TheCableBox": {
-    "games_fetched": 666,
-    "last_fetch": "2025-08-14T12:30:03.163335",
-    "total_games_fetched": 666
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:04.261051",
+    "total_games_fetched": 726
   },
   "catanalyst": {
     "games_fetched": 100,
@@ -335,34 +335,34 @@
     "total_games_fetched": 503
   },
   "QuCaNi": {
-    "games_fetched": 829,
-    "last_fetch": "2025-08-14T12:31:08.437038",
-    "total_games_fetched": 829
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:15.071921",
+    "total_games_fetched": 889
   },
   "OX528354": {
-    "games_fetched": 314,
-    "last_fetch": "2025-08-14T12:31:21.549344",
-    "total_games_fetched": 314
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:21.360387",
+    "total_games_fetched": 374
   },
   "Haunting_Games": {
-    "games_fetched": 352,
-    "last_fetch": "2025-08-14T12:31:35.847409",
-    "total_games_fetched": 352
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:27.664065",
+    "total_games_fetched": 412
   },
   "Suleyman_Chess06": {
-    "games_fetched": 410,
-    "last_fetch": "2025-08-14T12:31:52.153009",
-    "total_games_fetched": 410
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:34.027822",
+    "total_games_fetched": 470
   },
   "AnIndianChessplayer": {
-    "games_fetched": 894,
-    "last_fetch": "2025-08-14T12:32:25.428718",
-    "total_games_fetched": 894
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:40.408718",
+    "total_games_fetched": 954
   },
   "Paxavarica": {
-    "games_fetched": 295,
-    "last_fetch": "2025-08-14T12:32:41.474297",
-    "total_games_fetched": 295
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:46.691389",
+    "total_games_fetched": 355
   },
   "maksattamsat": {
     "games_fetched": 96,
@@ -370,14 +370,14 @@
     "total_games_fetched": 96
   },
   "The_Supreme_Judge": {
-    "games_fetched": 354,
-    "last_fetch": "2025-08-14T12:33:01.290343",
-    "total_games_fetched": 354
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:12:55.168855",
+    "total_games_fetched": 414
   },
   "Mr_StarrySky": {
-    "games_fetched": 152,
-    "last_fetch": "2025-08-14T12:33:08.636861",
-    "total_games_fetched": 152
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:01.457173",
+    "total_games_fetched": 212
   },
   "AlexChessChamp": {
     "games_fetched": 485,
@@ -385,39 +385,39 @@
     "total_games_fetched": 485
   },
   "ShellingFord92": {
-    "games_fetched": 1308,
-    "last_fetch": "2025-08-14T12:34:18.449490",
-    "total_games_fetched": 1308
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:09.981279",
+    "total_games_fetched": 1368
   },
   "AtalikS": {
-    "games_fetched": 1055,
-    "last_fetch": "2025-08-14T12:34:57.437690",
-    "total_games_fetched": 1055
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:16.323881",
+    "total_games_fetched": 1115
   },
   "schachinator999": {
-    "games_fetched": 970,
-    "last_fetch": "2025-08-14T12:35:33.465774",
-    "total_games_fetched": 970
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:22.624258",
+    "total_games_fetched": 1030
   },
   "DarkNebula-B": {
-    "games_fetched": 279,
-    "last_fetch": "2025-08-14T12:35:45.201114",
-    "total_games_fetched": 279
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:28.923517",
+    "total_games_fetched": 339
   },
   "TheMagnet": {
-    "games_fetched": 303,
-    "last_fetch": "2025-08-14T12:35:57.724901",
-    "total_games_fetched": 303
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:35.206820",
+    "total_games_fetched": 363
   },
   "OwnYulix": {
-    "games_fetched": 3510,
-    "last_fetch": "2025-08-14T12:38:01.848380",
-    "total_games_fetched": 3510
+    "games_fetched": 47,
+    "last_fetch": "2026-10-13T21:13:41.559225",
+    "total_games_fetched": 3557
   },
   "Hammurapi65": {
-    "games_fetched": 9910,
-    "last_fetch": "2025-08-14T12:43:38.716560",
-    "total_games_fetched": 9910
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:48.113703",
+    "total_games_fetched": 9970
   },
   "SpecterYamasaki": {
     "games_fetched": 0,
@@ -425,69 +425,69 @@
     "total_games_fetched": 0
   },
   "tommy_pug": {
-    "games_fetched": 400,
-    "last_fetch": "2025-08-14T12:43:58.215315",
-    "total_games_fetched": 400
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:13:56.700226",
+    "total_games_fetched": 460
   },
   "StochasticVolatility": {
-    "games_fetched": 598,
-    "last_fetch": "2025-08-14T12:44:34.219384",
-    "total_games_fetched": 598
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:14:03.007833",
+    "total_games_fetched": 658
   },
   "Henryletennisman26": {
-    "games_fetched": 212,
-    "last_fetch": "2025-08-14T12:44:44.093241",
-    "total_games_fetched": 212
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:14:09.397202",
+    "total_games_fetched": 272
   },
   "albowiem": {
-    "games_fetched": 464,
-    "last_fetch": "2025-08-14T12:45:02.096558",
-    "total_games_fetched": 464
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:14:15.684933",
+    "total_games_fetched": 524
   },
   "adhamyas": {
-    "games_fetched": 114,
-    "last_fetch": "2025-08-14T12:45:08.159367",
-    "total_games_fetched": 114
+    "games_fetched": 58,
+    "last_fetch": "2026-10-13T21:14:22.024251",
+    "total_games_fetched": 172
   },
   "Mahlermaniaco": {
-    "games_fetched": 749,
-    "last_fetch": "2025-08-14T12:45:35.679793",
-    "total_games_fetched": 749
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:14:28.367313",
+    "total_games_fetched": 809
   },
   "TryingNewThings1": {
-    "games_fetched": 203,
-    "last_fetch": "2025-08-14T12:45:44.702235",
-    "total_games_fetched": 203
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:14:34.593878",
+    "total_games_fetched": 263
   },
   "Mikevs": {
-    "games_fetched": 623,
-    "last_fetch": "2025-08-14T12:46:08.537267",
-    "total_games_fetched": 623
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:14:40.955562",
+    "total_games_fetched": 683
   },
   "MassterofMayhem": {
-    "games_fetched": 3995,
-    "last_fetch": "2025-08-14T12:48:25.462546",
-    "total_games_fetched": 3995
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:14:47.459596",
+    "total_games_fetched": 4055
   },
   "Breathing_water": {
-    "games_fetched": 479,
-    "last_fetch": "2025-08-14T12:48:44.225307",
-    "total_games_fetched": 479
+    "games_fetched": 58,
+    "last_fetch": "2026-10-13T21:14:53.766781",
+    "total_games_fetched": 537
   },
   "Lion_King11": {
-    "games_fetched": 2053,
-    "last_fetch": "2025-08-14T12:49:58.209894",
-    "total_games_fetched": 2053
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:00.044895",
+    "total_games_fetched": 2113
   },
   "bullishmoves": {
-    "games_fetched": 184,
-    "last_fetch": "2025-08-14T12:50:06.851460",
-    "total_games_fetched": 184
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:06.367439",
+    "total_games_fetched": 244
   },
   "Postnova_Margarita12": {
-    "games_fetched": 504,
-    "last_fetch": "2025-08-14T12:50:28.422177",
-    "total_games_fetched": 504
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:12.655446",
+    "total_games_fetched": 564
   },
   "LObbyist6": {
     "games_fetched": 96,
@@ -495,9 +495,9 @@
     "total_games_fetched": 96
   },
   "happykid0000": {
-    "games_fetched": 3413,
-    "last_fetch": "2025-08-14T12:52:31.360493",
-    "total_games_fetched": 3413
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:21.248914",
+    "total_games_fetched": 3473
   },
   "ORACLEof64": {
     "games_fetched": 33,
@@ -505,9 +505,9 @@
     "total_games_fetched": 33
   },
   "YaaasQueen": {
-    "games_fetched": 729,
-    "last_fetch": "2025-08-14T12:53:01.563400",
-    "total_games_fetched": 729
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:29.850920",
+    "total_games_fetched": 789
   },
   "Bandhawk": {
     "games_fetched": 477,
@@ -515,134 +515,134 @@
     "total_games_fetched": 477
   },
   "love_you_one": {
-    "games_fetched": 241,
-    "last_fetch": "2025-08-14T12:53:30.301199",
-    "total_games_fetched": 241
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:38.422532",
+    "total_games_fetched": 301
   },
   "Kradstalmund": {
     "games_fetched": 25,
-    "last_fetch": "2025-08-14T12:53:33.349586",
-    "total_games_fetched": 25
+    "last_fetch": "2026-10-13T21:15:42.293903",
+    "total_games_fetched": 50
   },
   "Volga_Tiger": {
-    "games_fetched": 59,
-    "last_fetch": "2025-08-14T12:53:37.597133",
-    "total_games_fetched": 59
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:48.578389",
+    "total_games_fetched": 119
   },
   "tireDemocrat": {
-    "games_fetched": 365,
-    "last_fetch": "2025-08-14T12:53:52.150535",
-    "total_games_fetched": 365
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:15:54.938992",
+    "total_games_fetched": 425
   },
   "Amin_NH": {
-    "games_fetched": 581,
-    "last_fetch": "2025-08-14T12:54:13.891837",
-    "total_games_fetched": 581
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:01.234922",
+    "total_games_fetched": 641
   },
   "C01B01": {
-    "games_fetched": 86,
-    "last_fetch": "2025-08-14T12:54:39.634532",
-    "total_games_fetched": 86
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:08.786458",
+    "total_games_fetched": 146
   },
   "edziomobil": {
-    "games_fetched": 211,
-    "last_fetch": "2025-08-14T12:54:49.013237",
-    "total_games_fetched": 211
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:15.067337",
+    "total_games_fetched": 271
   },
   "IgnatevDP": {
-    "games_fetched": 984,
-    "last_fetch": "2025-08-14T12:55:24.424587",
-    "total_games_fetched": 984
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:21.423301",
+    "total_games_fetched": 1044
   },
   "Qcfxi_dizsdicx": {
-    "games_fetched": 823,
-    "last_fetch": "2025-08-14T12:55:54.371662",
-    "total_games_fetched": 823
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:27.792141",
+    "total_games_fetched": 883
   },
   "Larrythecabledude": {
-    "games_fetched": 1552,
-    "last_fetch": "2025-08-14T12:56:49.039298",
-    "total_games_fetched": 1552
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:34.071908",
+    "total_games_fetched": 1612
   },
   "newaccwhothis": {
-    "games_fetched": 477,
-    "last_fetch": "2025-08-14T12:57:07.513572",
-    "total_games_fetched": 477
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:40.375862",
+    "total_games_fetched": 537
   },
   "daddystrength": {
-    "games_fetched": 4504,
-    "last_fetch": "2025-08-14T12:59:41.929909",
-    "total_games_fetched": 4504
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:48.617943",
+    "total_games_fetched": 4564
   },
   "Max05": {
-    "games_fetched": 1174,
-    "last_fetch": "2025-08-14T13:00:24.096682",
-    "total_games_fetched": 1174
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:16:54.982609",
+    "total_games_fetched": 1234
   },
   "Monarch2023": {
-    "games_fetched": 806,
-    "last_fetch": "2025-08-14T13:00:54.257389",
-    "total_games_fetched": 806
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:01.278392",
+    "total_games_fetched": 866
   },
   "SergeyNadeev": {
-    "games_fetched": 603,
-    "last_fetch": "2025-08-14T13:01:16.970655",
-    "total_games_fetched": 603
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:07.637864",
+    "total_games_fetched": 663
   },
   "nepoloh686": {
-    "games_fetched": 1431,
-    "last_fetch": "2025-08-14T13:02:07.509656",
-    "total_games_fetched": 1431
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:14.001798",
+    "total_games_fetched": 1491
   },
   "rehbwf": {
-    "games_fetched": 936,
-    "last_fetch": "2025-08-14T13:02:42.271894",
-    "total_games_fetched": 936
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:20.323468",
+    "total_games_fetched": 996
   },
   "Estonicca": {
-    "games_fetched": 207,
-    "last_fetch": "2025-08-14T13:02:51.518788",
-    "total_games_fetched": 207
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:26.604591",
+    "total_games_fetched": 267
   },
   "Mind05": {
-    "games_fetched": 412,
-    "last_fetch": "2025-08-14T13:03:07.746136",
-    "total_games_fetched": 412
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:32.915226",
+    "total_games_fetched": 472
   },
   "PathtoVictory3000": {
-    "games_fetched": 142,
-    "last_fetch": "2025-08-14T13:03:14.816541",
-    "total_games_fetched": 142
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:39.231882",
+    "total_games_fetched": 202
   },
   "bagera9": {
-    "games_fetched": 412,
-    "last_fetch": "2025-08-14T13:03:44.022852",
-    "total_games_fetched": 412
+    "games_fetched": 57,
+    "last_fetch": "2026-10-13T21:17:45.598157",
+    "total_games_fetched": 469
   },
   "ChessTheory64": {
-    "games_fetched": 990,
-    "last_fetch": "2025-08-14T13:04:20.240753",
-    "total_games_fetched": 990
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:51.959680",
+    "total_games_fetched": 1050
   },
   "Knight_ofthelight73": {
-    "games_fetched": 304,
-    "last_fetch": "2025-08-14T13:04:32.688849",
-    "total_games_fetched": 304
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:17:58.251373",
+    "total_games_fetched": 364
   },
   "Kysylyn": {
-    "games_fetched": 214,
-    "last_fetch": "2025-08-14T13:04:42.117529",
-    "total_games_fetched": 214
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:18:09.815716",
+    "total_games_fetched": 274
   },
   "FianuioAspas12": {
-    "games_fetched": 547,
-    "last_fetch": "2025-08-14T13:05:02.970289",
-    "total_games_fetched": 547
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:18:16.185528",
+    "total_games_fetched": 607
   },
   "Kodrut": {
-    "games_fetched": 421,
-    "last_fetch": "2025-08-14T13:05:19.539466",
-    "total_games_fetched": 421
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:18:23.006400",
+    "total_games_fetched": 481
   },
   "LevGLev": {
     "games_fetched": 1279,
@@ -650,64 +650,64 @@
     "total_games_fetched": 1279
   },
   "MasteringHW": {
-    "games_fetched": 548,
-    "last_fetch": "2025-08-14T13:06:27.056884",
-    "total_games_fetched": 548
+    "games_fetched": 59,
+    "last_fetch": "2026-10-13T21:18:32.038322",
+    "total_games_fetched": 607
   },
   "Dynamicus": {
-    "games_fetched": 300,
-    "last_fetch": "2025-08-14T13:06:39.469294",
-    "total_games_fetched": 300
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:18:38.340323",
+    "total_games_fetched": 360
   },
   "jbking07": {
-    "games_fetched": 1232,
-    "last_fetch": "2025-08-14T13:07:24.526607",
-    "total_games_fetched": 1232
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:18:48.514214",
+    "total_games_fetched": 1292
   },
   "Roman2001": {
-    "games_fetched": 317,
-    "last_fetch": "2025-08-14T13:07:37.910425",
-    "total_games_fetched": 317
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:18:54.956444",
+    "total_games_fetched": 377
   },
   "Jossbros": {
-    "games_fetched": 1072,
-    "last_fetch": "2025-08-14T13:08:16.460702",
-    "total_games_fetched": 1072
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:19:01.309227",
+    "total_games_fetched": 1132
   },
   "Idvan": {
-    "games_fetched": 637,
-    "last_fetch": "2025-08-14T13:08:40.482251",
-    "total_games_fetched": 637
+    "games_fetched": 59,
+    "last_fetch": "2026-10-13T21:19:07.608970",
+    "total_games_fetched": 696
   },
   "C0mB1n0v1tch": {
-    "games_fetched": 97,
-    "last_fetch": "2025-08-14T13:08:45.948780",
-    "total_games_fetched": 97
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:19:14.110714",
+    "total_games_fetched": 157
   },
   "Tiamo_Firenze": {
-    "games_fetched": 298,
-    "last_fetch": "2025-08-14T13:09:17.490119",
-    "total_games_fetched": 298
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:19:20.409524",
+    "total_games_fetched": 358
   },
   "JB2906": {
-    "games_fetched": 46,
-    "last_fetch": "2025-08-14T13:09:21.613727",
-    "total_games_fetched": 46
+    "games_fetched": 55,
+    "last_fetch": "2026-10-13T21:19:26.376257",
+    "total_games_fetched": 101
   },
   "QLS-Xagavan": {
-    "games_fetched": 170,
-    "last_fetch": "2025-08-14T13:09:29.618233",
-    "total_games_fetched": 170
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:19:32.663353",
+    "total_games_fetched": 230
   },
   "tramvay": {
-    "games_fetched": 992,
-    "last_fetch": "2025-08-14T13:10:06.096099",
-    "total_games_fetched": 992
+    "games_fetched": 59,
+    "last_fetch": "2026-10-13T21:19:38.965576",
+    "total_games_fetched": 1051
   },
   "joeALT30": {
-    "games_fetched": 834,
-    "last_fetch": "2025-08-14T13:10:36.396360",
-    "total_games_fetched": 834
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:19:45.261783",
+    "total_games_fetched": 894
   },
   "mr-a7aaaa17a7a": {
     "games_fetched": 552,
@@ -715,14 +715,14 @@
     "total_games_fetched": 552
   },
   "Crichero2024": {
-    "games_fetched": 551,
-    "last_fetch": "2025-08-14T13:11:18.122234",
-    "total_games_fetched": 551
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:19:53.781298",
+    "total_games_fetched": 611
   },
   "BudiRizkiansyah": {
-    "games_fetched": 104,
-    "last_fetch": "2025-08-14T13:11:23.846446",
-    "total_games_fetched": 104
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:00.148057",
+    "total_games_fetched": 164
   },
   "ArieWerksma": {
     "games_fetched": 1494,
@@ -730,19 +730,19 @@
     "total_games_fetched": 1494
   },
   "Super_BrainPower": {
-    "games_fetched": 352,
-    "last_fetch": "2025-08-14T13:12:31.434106",
-    "total_games_fetched": 352
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:08.660310",
+    "total_games_fetched": 412
   },
   "HamedManoochehri": {
-    "games_fetched": 2688,
-    "last_fetch": "2025-08-14T13:14:26.402659",
-    "total_games_fetched": 2688
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:15.025339",
+    "total_games_fetched": 2748
   },
   "TheDestinedOne": {
-    "games_fetched": 36,
-    "last_fetch": "2025-08-14T13:14:29.815754",
-    "total_games_fetched": 36
+    "games_fetched": 49,
+    "last_fetch": "2026-10-13T21:20:20.517852",
+    "total_games_fetched": 85
   },
   "Sadykov_Ilgiz-2006": {
     "games_fetched": 367,
@@ -750,19 +750,19 @@
     "total_games_fetched": 367
   },
   "MATRIXTRINITY": {
-    "games_fetched": 1708,
-    "last_fetch": "2025-08-14T13:15:46.544086",
-    "total_games_fetched": 1708
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:29.255854",
+    "total_games_fetched": 1768
   },
   "JesusChristConquers": {
-    "games_fetched": 140,
-    "last_fetch": "2025-08-14T13:15:53.459301",
-    "total_games_fetched": 140
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:35.494613",
+    "total_games_fetched": 200
   },
   "Weerasekara": {
-    "games_fetched": 4175,
-    "last_fetch": "2025-08-14T13:18:24.190997",
-    "total_games_fetched": 4175
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:41.897135",
+    "total_games_fetched": 4235
   },
   "Prepstoring": {
     "games_fetched": 426,
@@ -770,44 +770,44 @@
     "total_games_fetched": 426
   },
   "nmiq": {
-    "games_fetched": 650,
-    "last_fetch": "2025-08-14T13:19:05.306652",
-    "total_games_fetched": 650
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:51.887974",
+    "total_games_fetched": 710
   },
   "Nidmas": {
-    "games_fetched": 288,
-    "last_fetch": "2025-08-14T13:19:36.108774",
-    "total_games_fetched": 288
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:20:58.194891",
+    "total_games_fetched": 348
   },
   "Tictoocchess": {
-    "games_fetched": 1246,
-    "last_fetch": "2025-08-14T13:20:21.768177",
-    "total_games_fetched": 1246
+    "games_fetched": 57,
+    "last_fetch": "2026-10-13T21:21:04.541548",
+    "total_games_fetched": 1303
   },
   "dkodwkc": {
-    "games_fetched": 724,
-    "last_fetch": "2025-08-14T13:20:48.996783",
-    "total_games_fetched": 724
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:21:10.894008",
+    "total_games_fetched": 784
   },
   "b31b6Consultant": {
-    "games_fetched": 441,
-    "last_fetch": "2025-08-14T13:21:06.126394",
-    "total_games_fetched": 441
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:21:17.258481",
+    "total_games_fetched": 501
   },
   "Heisenberg9115": {
-    "games_fetched": 632,
-    "last_fetch": "2025-08-14T13:21:29.736503",
-    "total_games_fetched": 632
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:21:23.550443",
+    "total_games_fetched": 692
   },
   "BlindMonster": {
-    "games_fetched": 825,
-    "last_fetch": "2025-08-14T13:21:59.845379",
-    "total_games_fetched": 825
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:21:29.912341",
+    "total_games_fetched": 885
   },
   "MarkosianDavid": {
-    "games_fetched": 2124,
-    "last_fetch": "2025-08-14T13:23:16.294411",
-    "total_games_fetched": 2124
+    "games_fetched": 56,
+    "last_fetch": "2026-10-13T21:21:36.386507",
+    "total_games_fetched": 2180
   },
   "littleprince1981": {
     "games_fetched": 133,
@@ -815,39 +815,39 @@
     "total_games_fetched": 133
   },
   "zanycolourfulwindow": {
-    "games_fetched": 2834,
-    "last_fetch": "2025-08-14T13:25:08.010167",
-    "total_games_fetched": 2834
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:21:44.969839",
+    "total_games_fetched": 2894
   },
   "Jai_Gurudev": {
-    "games_fetched": 214,
-    "last_fetch": "2025-08-14T13:25:17.455033",
-    "total_games_fetched": 214
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:21:51.255903",
+    "total_games_fetched": 274
   },
   "Stephen31": {
-    "games_fetched": 182,
-    "last_fetch": "2025-08-14T13:25:25.873889",
-    "total_games_fetched": 182
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:21:57.476492",
+    "total_games_fetched": 242
   },
   "Atomrod": {
-    "games_fetched": 647,
-    "last_fetch": "2025-08-14T13:25:53.589073",
-    "total_games_fetched": 647
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:03.836640",
+    "total_games_fetched": 707
   },
   "putpressureonapinned": {
-    "games_fetched": 176,
-    "last_fetch": "2025-08-14T13:26:01.685164",
-    "total_games_fetched": 176
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:10.117357",
+    "total_games_fetched": 236
   },
   "AntiberserkM": {
-    "games_fetched": 1763,
-    "last_fetch": "2025-08-14T13:27:05.881115",
-    "total_games_fetched": 1763
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:16.477388",
+    "total_games_fetched": 1823
   },
   "HandKnit": {
-    "games_fetched": 383,
-    "last_fetch": "2025-08-14T13:27:33.090211",
-    "total_games_fetched": 383
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:22.829953",
+    "total_games_fetched": 443
   },
   "OnlyRapid11": {
     "games_fetched": 112,
@@ -855,14 +855,14 @@
     "total_games_fetched": 112
   },
   "Quorvex": {
-    "games_fetched": 49,
-    "last_fetch": "2025-08-14T13:27:43.173240",
-    "total_games_fetched": 49
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:32.200750",
+    "total_games_fetched": 109
   },
   "lada23new": {
-    "games_fetched": 207,
-    "last_fetch": "2025-08-14T13:27:52.347850",
-    "total_games_fetched": 207
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:38.505172",
+    "total_games_fetched": 267
   },
   "Smash_01": {
     "games_fetched": 278,
@@ -870,59 +870,59 @@
     "total_games_fetched": 278
   },
   "Bennerbeatbox": {
-    "games_fetched": 352,
-    "last_fetch": "2025-08-14T13:28:18.320388",
-    "total_games_fetched": 352
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:47.099222",
+    "total_games_fetched": 412
   },
   "Victorterror1": {
-    "games_fetched": 679,
-    "last_fetch": "2025-08-14T13:28:44.020082",
-    "total_games_fetched": 679
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:53.447670",
+    "total_games_fetched": 739
   },
   "I_WANT_MORE": {
-    "games_fetched": 359,
-    "last_fetch": "2025-08-14T13:28:58.350123",
-    "total_games_fetched": 359
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:22:59.741170",
+    "total_games_fetched": 419
   },
   "JJPlayz": {
-    "games_fetched": 8843,
-    "last_fetch": "2025-08-14T13:34:05.702675",
-    "total_games_fetched": 8843
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:23:16.516630",
+    "total_games_fetched": 8903
   },
   "Grempsi": {
-    "games_fetched": 27,
-    "last_fetch": "2025-08-14T13:34:09.128533",
-    "total_games_fetched": 27
+    "games_fetched": 56,
+    "last_fetch": "2026-10-13T21:23:22.563331",
+    "total_games_fetched": 83
   },
   "i_love_1C": {
-    "games_fetched": 58,
-    "last_fetch": "2025-08-14T13:34:13.474171",
-    "total_games_fetched": 58
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:23:28.863619",
+    "total_games_fetched": 118
   },
   "d-pawn": {
-    "games_fetched": 1168,
-    "last_fetch": "2025-08-14T13:35:35.404241",
-    "total_games_fetched": 1168
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:23:35.306763",
+    "total_games_fetched": 1228
   },
   "FrozenWords": {
     "games_fetched": 37,
-    "last_fetch": "2025-08-14T13:35:38.904535",
-    "total_games_fetched": 37
+    "last_fetch": "2026-10-13T21:23:40.057675",
+    "total_games_fetched": 74
   },
   "bobmarley1love": {
-    "games_fetched": 61,
-    "last_fetch": "2025-08-14T13:35:43.208234",
-    "total_games_fetched": 61
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:23:46.613058",
+    "total_games_fetched": 121
   },
   "Odette_de_Crecy": {
-    "games_fetched": 1151,
-    "last_fetch": "2025-08-14T13:36:24.277432",
-    "total_games_fetched": 1151
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:23:52.969630",
+    "total_games_fetched": 1211
   },
   "nikolarasss": {
-    "games_fetched": 1512,
-    "last_fetch": "2025-08-14T13:37:17.664965",
-    "total_games_fetched": 1512
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:23:59.264551",
+    "total_games_fetched": 1572
   },
   "Jspace02": {
     "games_fetched": 910,
@@ -935,14 +935,14 @@
     "total_games_fetched": 509
   },
   "CoachCai": {
-    "games_fetched": 253,
-    "last_fetch": "2025-08-14T13:38:20.972165",
-    "total_games_fetched": 253
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:24:10.197865",
+    "total_games_fetched": 313
   },
   "RubinsteinsMonster": {
-    "games_fetched": 3535,
-    "last_fetch": "2025-08-14T13:40:26.032510",
-    "total_games_fetched": 3535
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:24:16.539753",
+    "total_games_fetched": 3595
   },
   "froggykermit": {
     "games_fetched": 273,
@@ -955,44 +955,44 @@
     "total_games_fetched": 59
   },
   "CzechWarrior": {
-    "games_fetched": 273,
-    "last_fetch": "2025-08-14T13:40:53.130952",
-    "total_games_fetched": 273
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:24:27.214559",
+    "total_games_fetched": 333
   },
   "STN_Chess": {
-    "games_fetched": 362,
-    "last_fetch": "2025-08-14T13:41:07.564264",
-    "total_games_fetched": 362
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:24:33.501904",
+    "total_games_fetched": 422
   },
   "Sameh2023": {
-    "games_fetched": 428,
-    "last_fetch": "2025-08-14T13:41:26.030805",
-    "total_games_fetched": 428
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:24:39.807890",
+    "total_games_fetched": 488
   },
   "komodo54": {
-    "games_fetched": 6402,
-    "last_fetch": "2025-08-14T13:45:15.170673",
-    "total_games_fetched": 6402
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:24:46.372955",
+    "total_games_fetched": 6462
   },
   "d1rector": {
-    "games_fetched": 907,
-    "last_fetch": "2025-08-14T13:45:55.280014",
-    "total_games_fetched": 907
+    "games_fetched": 58,
+    "last_fetch": "2026-10-13T21:24:52.673712",
+    "total_games_fetched": 965
   },
   "mystisking": {
-    "games_fetched": 1774,
-    "last_fetch": "2025-08-14T13:47:00.450835",
-    "total_games_fetched": 1774
+    "games_fetched": 44,
+    "last_fetch": "2026-10-13T21:24:59.029068",
+    "total_games_fetched": 1818
   },
   "ppom12": {
-    "games_fetched": 115,
-    "last_fetch": "2025-08-14T13:47:06.610628",
-    "total_games_fetched": 115
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:25:05.329783",
+    "total_games_fetched": 175
   },
   "redsheep": {
-    "games_fetched": 352,
-    "last_fetch": "2025-08-14T13:47:20.704879",
-    "total_games_fetched": 352
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:25:11.689721",
+    "total_games_fetched": 412
   },
   "Maziko_02": {
     "games_fetched": 60,
@@ -1000,69 +1000,69 @@
     "total_games_fetched": 60
   },
   "andy2342": {
-    "games_fetched": 38,
-    "last_fetch": "2025-08-14T13:47:28.368995",
-    "total_games_fetched": 38
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:25:25.151908",
+    "total_games_fetched": 98
   },
   "h5h6h7": {
-    "games_fetched": 1059,
-    "last_fetch": "2025-08-14T13:48:06.408082",
-    "total_games_fetched": 1059
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:25:31.533182",
+    "total_games_fetched": 1119
   },
   "Daniel-Ortega": {
-    "games_fetched": 793,
-    "last_fetch": "2025-08-14T13:48:35.410154",
-    "total_games_fetched": 793
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:25:37.888711",
+    "total_games_fetched": 853
   },
   "Aleph_Vox": {
-    "games_fetched": 129,
-    "last_fetch": "2025-08-14T13:48:41.918859",
-    "total_games_fetched": 129
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:25:44.105881",
+    "total_games_fetched": 189
   },
   "Suhov549": {
-    "games_fetched": 1994,
-    "last_fetch": "2025-08-14T13:49:53.355904",
-    "total_games_fetched": 1994
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:25:50.475117",
+    "total_games_fetched": 2054
   },
   "Nikita272005": {
-    "games_fetched": 1814,
-    "last_fetch": "2025-08-14T13:50:58.710744",
-    "total_games_fetched": 1814
+    "games_fetched": 59,
+    "last_fetch": "2026-10-13T21:25:56.951493",
+    "total_games_fetched": 1873
   },
   "PinkWafflePig": {
-    "games_fetched": 4002,
-    "last_fetch": "2025-08-14T13:53:17.722609",
-    "total_games_fetched": 4002
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:03.313591",
+    "total_games_fetched": 4062
   },
   "BeatrizRuvieri": {
-    "games_fetched": 1322,
-    "last_fetch": "2025-08-14T13:54:05.315204",
-    "total_games_fetched": 1322
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:09.683793",
+    "total_games_fetched": 1382
   },
   "powerking96": {
-    "games_fetched": 543,
-    "last_fetch": "2025-08-14T13:54:25.830428",
-    "total_games_fetched": 543
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:15.971612",
+    "total_games_fetched": 603
   },
   "FlyyElloW_2000YO": {
-    "games_fetched": 125,
-    "last_fetch": "2025-08-14T13:54:32.271248",
-    "total_games_fetched": 125
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:23.175006",
+    "total_games_fetched": 185
   },
   "bosspotato": {
-    "games_fetched": 7479,
-    "last_fetch": "2025-08-14T13:58:52.263064",
-    "total_games_fetched": 7479
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:31.470956",
+    "total_games_fetched": 7539
   },
   "a_boring_username": {
-    "games_fetched": 345,
-    "last_fetch": "2025-08-14T13:59:06.193050",
-    "total_games_fetched": 345
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:37.781676",
+    "total_games_fetched": 405
   },
   "Opening_Master9": {
-    "games_fetched": 122,
-    "last_fetch": "2025-08-14T13:59:12.554175",
-    "total_games_fetched": 122
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:44.021261",
+    "total_games_fetched": 182
   },
   "A10-Thunderbolt": {
     "games_fetched": 118,
@@ -1070,58 +1070,63 @@
     "total_games_fetched": 118
   },
   "Magnus_misr": {
-    "games_fetched": 530,
-    "last_fetch": "2025-08-14T13:59:38.930885",
-    "total_games_fetched": 530
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:52.674556",
+    "total_games_fetched": 590
   },
   "MW1966": {
-    "games_fetched": 3386,
-    "last_fetch": "2025-08-14T14:01:39.530759",
-    "total_games_fetched": 3386
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:26:59.179533",
+    "total_games_fetched": 3446
   },
   "terzic64": {
-    "games_fetched": 501,
-    "last_fetch": "2025-08-14T14:01:59.050747",
-    "total_games_fetched": 501
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:05.473502",
+    "total_games_fetched": 561
   },
   "ankof": {
-    "games_fetched": 549,
-    "last_fetch": "2025-08-14T14:02:19.838266",
-    "total_games_fetched": 549
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:11.763653",
+    "total_games_fetched": 609
   },
   "Proward05": {
-    "games_fetched": 535,
-    "last_fetch": "2025-08-14T14:02:40.239680",
-    "total_games_fetched": 535
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:18.057910",
+    "total_games_fetched": 595
   },
   "HoMeEeEr": {
-    "games_fetched": 717,
-    "last_fetch": "2025-08-14T14:03:07.464726",
-    "total_games_fetched": 717
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:24.424681",
+    "total_games_fetched": 777
   },
   "Summon_Cerberus": {
-    "games_fetched": 1448,
-    "last_fetch": "2025-08-14T14:03:58.517005",
-    "total_games_fetched": 1448
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:30.783176",
+    "total_games_fetched": 1508
   },
   "Aichyy": {
-    "games_fetched": 128,
-    "last_fetch": "2025-08-14T14:04:05.223343",
-    "total_games_fetched": 128
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:37.144135",
+    "total_games_fetched": 188
   },
   "JG2001": {
-    "games_fetched": 242,
-    "last_fetch": "2025-08-14T14:04:15.724261",
-    "total_games_fetched": 242
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:43.443092",
+    "total_games_fetched": 302
   },
   "chesslh": {
-    "games_fetched": 4066,
-    "last_fetch": "2025-08-14T14:06:40.344146",
-    "total_games_fetched": 4066
+    "games_fetched": 58,
+    "last_fetch": "2026-10-13T21:27:50.938559",
+    "total_games_fetched": 4124
   },
   "FranciscoMw": {
-    "games_fetched": 260,
-    "last_fetch": "2025-08-14T14:06:51.585000",
-    "total_games_fetched": 260
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:27:57.294306",
+    "total_games_fetched": 320
+  },
+  "chessmount": {
+    "games_fetched": 60,
+    "last_fetch": "2026-10-13T21:10:06.399646",
+    "total_games_fetched": 60
   }
 }
