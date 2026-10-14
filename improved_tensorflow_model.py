@@ -8,9 +8,8 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import (
     Dense, LSTM, Bidirectional, Dropout, Embedding, 
-    Conv1D, MaxPooling1D, GlobalMaxPooling1D,
-    Input, Concatenate, BatchNormalization, Flatten,
-    Reshape, Lambda
+    Conv1D, MaxPooling1D, GlobalMaxPooling1D, GlobalAveragePooling1D,
+    Input, Concatenate, BatchNormalization, Masking
 )
 from tensorflow.keras.callbacks import (
     EarlyStopping, ReduceLROnPlateau, ModelCheckpoint,
@@ -21,8 +20,6 @@ from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras.metrics import BinaryAccuracy, Precision, Recall, AUC
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 import pickle
 import os
 from typing import Dict, List, Tuple, Any
@@ -50,20 +47,43 @@ def encode_moves(moves_str: str, vocab: Dict[str, int], max_len: int) -> List[in
     tokens = tokens[:max_len]
     return tokens + [vocab['<PAD>']] * (max_len - len(tokens))
 
-def encode_times(times_str, max_len: int) -> np.ndarray:
-    """Encode move times (seconds) as log1p, truncated / zero-padded to max_len.
+# Per-move feature channels fed to the model
+MOVE_FEATURES = ['is_move', 'log_time', 'has_eval', 'eval_loss']
 
-    A fixed transform keeps absolute speed and consistency visible to the model
-    (per-game z-scoring erased both) and leaves padding at exactly 0.
+def _parse_floats(values, max_len: int) -> List:
+    """Comma-separated numbers -> list; empty entries become None"""
+    if isinstance(values, str):
+        items = values.split(',') if values else []
+        return [float(v) if v.strip() else None for v in items][:max_len]
+    if isinstance(values, (list, np.ndarray)):
+        return list(values)[:max_len]
+    return []
+
+def encode_move_features(times_str, losses_str, max_len: int) -> np.ndarray:
+    """Encode each move as [is_move, log1p(seconds), has_eval, log1p(win% loss)].
+
+    is_move marks real moves so padding rows are all-zero and can be masked.
+    has_eval separates "unanalysed" from "perfect move", which would otherwise
+    both look like a 0 loss. Times use a fixed log transform (per-game z-scoring
+    erased absolute speed and consistency).
     """
-    if isinstance(times_str, str):
-        times = [float(t) for t in times_str.split(',') if t.strip()]
-    else:
-        times = list(times_str) if isinstance(times_str, (list, np.ndarray)) else []
-    encoded = np.zeros(max_len, dtype=np.float32)
-    times = np.log1p(np.clip(times[:max_len], 0, None))
-    encoded[:len(times)] = times
-    return encoded
+    times = _parse_floats(times_str, max_len)
+    losses = _parse_floats(losses_str, max_len)
+    features = np.zeros((max_len, len(MOVE_FEATURES)), dtype=np.float32)
+    for i, t in enumerate(times):
+        features[i, 0] = 1.0
+        features[i, 1] = np.log1p(max(t or 0.0, 0.0))
+        if i < len(losses) and losses[i] is not None:
+            features[i, 2] = 1.0
+            features[i, 3] = np.log1p(min(max(losses[i], 0.0), 100.0))
+    return features
+
+def as_model_inputs(model: Model, X_moves: np.ndarray, X_features: np.ndarray,
+                    X_color: np.ndarray) -> Dict[str, np.ndarray]:
+    """Inputs keyed by name, limited to those the model declares (a model
+    trained without move tokens has no moves_input)"""
+    available = {'moves_input': X_moves, 'features_input': X_features, 'color_input': X_color}
+    return {t.name: available[t.name] for t in model.inputs}
 
 # Keras' default (0.99) leaves inference-time BatchNorm statistics lagging far
 # behind training on datasets this small, squashing predictions toward the prior
@@ -72,75 +92,66 @@ BN_MOMENTUM = 0.9
 class AdvancedChessClassifier:
     """Advanced TensorFlow/Keras model for chess anti-cheat detection"""
     
-    def __init__(self, vocab_size: int, max_len: int = 300, embed_dim: int = 128):
+    def __init__(self, vocab_size: int, max_len: int = 300, embed_dim: int = 64,
+                 lstm_units: int = 64, dense_units: Tuple[int, ...] = (128, 64),
+                 dropout: float = 0.4, use_moves: bool = True):
         self.vocab_size = vocab_size
         self.max_len = max_len
         self.embed_dim = embed_dim
+        self.lstm_units = lstm_units
+        self.dense_units = dense_units
+        self.dropout = dropout
+        # The move-token branch can memorise players' openings; set False to
+        # train on timing and engine-accuracy features only
+        self.use_moves = use_moves
         self.model = None
-        self.scaler = StandardScaler()
         
     def build_model(self) -> Model:
-        """Build advanced neural network architecture"""
+        """Build the network: move tokens + per-move timing/accuracy features + color"""
         
         # Input layers
         moves_input = Input(shape=(self.max_len,), name='moves_input')
-        times_input = Input(shape=(self.max_len,), name='times_input')
+        features_input = Input(shape=(self.max_len, len(MOVE_FEATURES)), name='features_input')
         color_input = Input(shape=(1,), name='color_input')
+        branches = []
         
-        # Move embedding and processing
-        move_embedding = Embedding(self.vocab_size, self.embed_dim, 
-                                 input_length=self.max_len, 
-                                 mask_zero=True)(moves_input)
+        if self.use_moves:
+            # Move tokens: embedding -> BiLSTM -> local patterns
+            move_embedding = Embedding(self.vocab_size, self.embed_dim, mask_zero=True)(moves_input)
+            lstm_out = Bidirectional(LSTM(self.lstm_units, return_sequences=True))(move_embedding)
+            lstm_out = Dropout(self.dropout)(lstm_out)
+            conv = Conv1D(64, 5, activation='relu', padding='same')(lstm_out)
+            conv = BatchNormalization(momentum=BN_MOMENTUM)(conv)
+            branches.append(GlobalMaxPooling1D()(conv))
         
-        # Bidirectional LSTM for move sequence
-        lstm_out = Bidirectional(LSTM(128, return_sequences=True))(move_embedding)
-        lstm_out = Dropout(0.3)(lstm_out)
-        
-        # Conv1D layers for local pattern detection
-        conv1 = Conv1D(64, 3, activation='relu', padding='same')(lstm_out)
-        conv1 = BatchNormalization(momentum=BN_MOMENTUM)(conv1)
-        conv1 = MaxPooling1D(2)(conv1)
-        
-        conv2 = Conv1D(128, 5, activation='relu', padding='same')(conv1)
-        conv2 = BatchNormalization(momentum=BN_MOMENTUM)(conv2)
-        conv2 = MaxPooling1D(2)(conv2)
-        
-        conv3 = Conv1D(256, 7, activation='relu', padding='same')(conv2)
-        conv3 = BatchNormalization(momentum=BN_MOMENTUM)(conv3)
-        conv3 = GlobalMaxPooling1D()(conv3)
-        
-        # Time features processing - FIXED: Reshape to 3D for GlobalMaxPooling1D
-        times_reshaped = Reshape((self.max_len, 1))(times_input)
-        times_dense = Dense(64, activation='relu')(times_reshaped)
-        times_dense = Dropout(0.2)(times_dense)
-        times_pooled = GlobalMaxPooling1D()(times_dense)
+        # Per-move timing and engine-accuracy features. Masking drops padding
+        # rows, so the average is over real moves only (e.g. mean accuracy).
+        masked = Masking(mask_value=0.0)(features_input)
+        per_move = Dense(32, activation='relu')(masked)
+        per_move = Dense(32, activation='relu')(per_move)
+        local = Conv1D(32, 5, activation='relu', padding='same')(features_input)
+        branches += [
+            GlobalAveragePooling1D()(per_move),
+            GlobalMaxPooling1D()(local),
+        ]
         
         # Color features
-        color_dense = Dense(32, activation='relu')(color_input)
-        color_dense = Dropout(0.1)(color_dense)
+        branches.append(Dense(8, activation='relu')(color_input))
         
-        # Combine all features
-        combined = Concatenate()([conv3, times_pooled, color_dense])
-        
-        # Dense layers with residual connections
-        dense1 = Dense(512, activation='relu')(combined)
-        dense1 = BatchNormalization(momentum=BN_MOMENTUM)(dense1)
-        dense1 = Dropout(0.4)(dense1)
-        
-        dense2 = Dense(256, activation='relu')(dense1)
-        dense2 = BatchNormalization(momentum=BN_MOMENTUM)(dense2)
-        dense2 = Dropout(0.3)(dense2)
-        
-        dense3 = Dense(128, activation='relu')(dense2)
-        dense3 = BatchNormalization(momentum=BN_MOMENTUM)(dense3)
-        dense3 = Dropout(0.2)(dense3)
+        x = Concatenate()(branches)
+        for units in self.dense_units:
+            x = Dense(units, activation='relu')(x)
+            x = BatchNormalization(momentum=BN_MOMENTUM)(x)
+            x = Dropout(self.dropout)(x)
         
         # Output layer
-        output = Dense(1, activation='sigmoid', name='output')(dense3)
+        output = Dense(1, activation='sigmoid', name='output')(x)
         
-        # Create model
+        inputs = {'features_input': features_input, 'color_input': color_input}
+        if self.use_moves:
+            inputs['moves_input'] = moves_input
         self.model = Model(
-            inputs=[moves_input, times_input, color_input],
+            inputs=inputs,
             outputs=output,
             name='AdvancedChessClassifier'
         )
@@ -173,10 +184,12 @@ class AdvancedChessClassifier:
         """Get advanced callbacks for training"""
         
         callbacks = [
-            # Early stopping with patience
+            # Stop once validation AUC stops improving; the model starts
+            # memorising training players within a few epochs
             EarlyStopping(
-                monitor='val_loss',
-                patience=10,
+                monitor='val_auc',
+                mode='max',
+                patience=3,
                 restore_best_weights=True,
                 verbose=1
             ),
@@ -185,7 +198,7 @@ class AdvancedChessClassifier:
             ReduceLROnPlateau(
                 monitor='val_loss',
                 factor=0.5,
-                patience=5,
+                patience=2,
                 min_lr=1e-7,
                 verbose=1
             ),
@@ -202,7 +215,7 @@ class AdvancedChessClassifier:
             # TensorBoard logging
             TensorBoard(
                 log_dir='./logs',
-                histogram_freq=1,
+                histogram_freq=0,
                 write_graph=True,
                 write_images=True
             )
@@ -220,10 +233,12 @@ class AdvancedChessClassifier:
         times_sequences = []
         color_sequences = []
         labels = []
+        has_losses = 'move_losses' in df.columns
         
         for _, row in df.iterrows():
             tokens = encode_moves(row['moves'], vocab, self.max_len)
-            times = encode_times(row['move_times'], self.max_len)
+            times = encode_move_features(row['move_times'], row['move_losses'] if has_losses else '',
+                                         self.max_len)
             
             # Color encoding (white=1, black=0)
             color = 1.0 if row['player_color'] == 'white' else 0.0
@@ -241,7 +256,7 @@ class AdvancedChessClassifier:
         
         print(f"✅ Data prepared:")
         print(f"   - Moves shape: {X_moves.shape}")
-        print(f"   - Times shape: {X_times.shape}")
+        print(f"   - Move features shape: {X_times.shape}")
         print(f"   - Color shape: {X_color.shape}")
         print(f"   - Labels shape: {y.shape}")
         
@@ -261,9 +276,15 @@ class AdvancedChessClassifier:
         
         # Prepare data
         X_moves, X_times, X_color, y = self.prepare_data(df, vocab)
+        
+        # Build and compile model
+        self.build_model()
+        self.compile_model()
+        
         if val_df is not None:
             X_moves_val, X_times_val, X_color_val, y_val = self.prepare_data(val_df, vocab)
-            validation = {'validation_data': ([X_moves_val, X_times_val, X_color_val], y_val)}
+            validation = {'validation_data': (
+                as_model_inputs(self.model, X_moves_val, X_times_val, X_color_val), y_val)}
         else:
             validation = {'validation_split': validation_split}
         
@@ -272,16 +293,12 @@ class AdvancedChessClassifier:
         class_weight = {c: len(y) / (2 * counts[c]) for c in (0, 1) if counts[c] > 0}
         print(f"⚖️ Class weights: {class_weight}")
         
-        # Build and compile model
-        self.build_model()
-        self.compile_model()
-        
         # Get callbacks
         callbacks = self.get_callbacks()
         
         # Train model
         history = self.model.fit(
-            [X_moves, X_times, X_color],
+            as_model_inputs(self.model, X_moves, X_times, X_color),
             y,
             epochs=epochs,
             batch_size=batch_size,
@@ -295,13 +312,13 @@ class AdvancedChessClassifier:
         return history
     
     def evaluate(self, X_moves: np.ndarray, X_times: np.ndarray, 
-                X_color: np.ndarray, y: np.ndarray) -> Dict:
+                X_color: np.ndarray, y: np.ndarray, threshold: float = 0.5) -> Dict:
         """Evaluate the model"""
         
         print("🔍 Evaluating model...")
         
         # Make predictions
-        predictions = self.model.predict([X_moves, X_times, X_color])
+        predictions = self.model.predict(as_model_inputs(self.model, X_moves, X_times, X_color), verbose=0)
         
         # Calculate metrics
         from sklearn.metrics import (
@@ -310,7 +327,7 @@ class AdvancedChessClassifier:
         )
         
         # Convert predictions to binary
-        y_pred_binary = (predictions > 0.5).astype(int)
+        y_pred_binary = (predictions > threshold).astype(int)
         
         # Precision / recall / F1 for the cheater class: weighted averages are
         # dominated by the honest majority and hide missed cheaters
@@ -333,7 +350,7 @@ class AdvancedChessClassifier:
             'binary_predictions': y_pred_binary.flatten()
         }
         
-        print("📊 Evaluation Results:")
+        print(f"📊 Evaluation Results (threshold {threshold:.3f}):")
         print(f"  Accuracy: {results['accuracy']:.4f} (always-majority baseline: {results['baseline_accuracy']:.4f})")
         print(f"  Balanced Accuracy: {results['balanced_accuracy']:.4f}")
         print(f"  Cheater Precision: {results['precision']:.4f}")

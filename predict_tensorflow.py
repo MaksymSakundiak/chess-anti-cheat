@@ -1,334 +1,248 @@
 #!/usr/bin/env python3
 """
 TensorFlow Prediction Script for Chess Anti-Cheat Detection
-Analyzes both players in a chess game for cheating detection
+
+Two modes:
+  1. Score a Lichess account: downloads their recent rated rapid games, scores
+     each one and averages the scores. This is the reliable mode; a single game
+     carries little evidence.
+  2. Score one game from typed-in moves, think times and (optionally) per-move
+     engine losses.
 """
 
-import tensorflow as tf
-import numpy as np
-import pandas as pd
-import pickle
+import json
 import os
-from typing import Dict, List, Any
+import pickle
 import warnings
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+import tensorflow as tf
+
+from improved_tensorflow_model import as_model_inputs, encode_move_features, encode_moves, _parse_floats
+
 warnings.filterwarnings('ignore')
 
-# Fallback: import the model builder to reconstruct architecture if needed
-from improved_tensorflow_model import AdvancedChessClassifier, encode_moves, encode_times
+META_FILE = 'model_meta.json'
+# Thresholds are tuned on players with dozens of games; a handful is too little evidence
+MIN_ACCOUNT_GAMES = 10
+
 
 class TensorFlowChessPredictor:
     """TensorFlow-based predictor for chess anti-cheat detection"""
-    
-    def __init__(self, model_path: str | None = None, vocab_path="hdf5_vocab.pkl"):
-        # Decide model path
-        if model_path is None:
-            if os.path.exists("advanced_chess_model.keras"):
-                model_path = "advanced_chess_model.keras"
-            elif os.path.exists("advanced_chess_model.h5"):
-                model_path = "advanced_chess_model.h5"
-            else:
-                raise FileNotFoundError("No TensorFlow model found (.keras or .h5)")
-        
-        # Load vocabulary
+
+    def __init__(self, model_path: Optional[str] = None, vocab_path: str = "hdf5_vocab.pkl",
+                 meta_path: str = META_FILE):
+        # Thresholds chosen on validation players by train_tensorflow.py
+        self.meta = {'game_threshold': 0.5, 'player_threshold': 0.5, 'max_len': 300}
+        if os.path.exists(meta_path):
+            with open(meta_path) as f:
+                self.meta.update(json.load(f))
+        else:
+            print(f"⚠️ {meta_path} not found; using 0.5 thresholds. Retrain to calibrate them.")
+
+        model_path = model_path or self.meta.get('model_path', 'advanced_chess_model.keras')
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"No model at {model_path}. Train first: python train_tensorflow.py")
+
         with open(vocab_path, "rb") as f:
             self.vocab = pickle.load(f)
-        
-        # Load TensorFlow model
-        self.model = None
-        load_error = None
-        try:
-            if model_path.endswith('.h5'):
-                import keras
-                self.model = keras.saving.load_model(model_path, compile=False, safe_mode=False)
-            else:
-                self.model = tf.keras.models.load_model(model_path)
-        except Exception as e:
-            load_error = e
-        
-        # Fallback: rebuild architecture and load weights from legacy .h5
-        if self.model is None and model_path.endswith('.h5'):
-            try:
-                classifier = AdvancedChessClassifier(vocab_size=len(self.vocab))
-                classifier.build_model()
-                classifier.compile_model()
-                classifier.model.load_weights(model_path, skip_mismatch=True)
-                self.model = classifier.model
-                load_error = None
-            except Exception as e2:
-                load_error = e2
-        
-        if self.model is None and load_error is not None:
-            raise RuntimeError(f"Failed to load model '{model_path}': {load_error}")
-        
-        print(f"✅ TensorFlow model loaded successfully from {model_path}")
-        
-        # Confidence thresholds
-        self.high_confidence_threshold = 0.8
-        self.low_confidence_threshold = 0.3
-        
-    def predict_player_moves(self, moves_str: str, move_times_str: str = "", player_color: str = "white", max_len: int = 300) -> Dict[str, Any]:
-        """Predict if a player's moves indicate cheating using TensorFlow model"""
-        
-        if not moves_str or moves_str.strip() == '':
-            return {
-                'prediction': 'Invalid',
-                'confidence': 0.0,
-                'explanation': 'No moves provided',
-                'risk_factors': [],
-                'player_color': player_color
-            }
-        
-        # Encode exactly as in training
-        moves = [m.strip() for m in moves_str.split(',') if m.strip()]
-        tokens = encode_moves(moves_str, self.vocab, max_len)
-        times = encode_times(move_times_str, max_len)
-        
-        # Color encoding (white=1, black=0)
-        color = 1.0 if player_color == 'white' else 0.0
-        
-        # Prepare input for TensorFlow model
-        X_moves = np.array([tokens])
-        X_times = np.array([times])
-        X_color = np.array([[color]])
-        
-        # Get prediction
-        prediction = self.model.predict([X_moves, X_times, X_color], verbose=0)
-        confidence = float(prediction[0][0])
-        
-        # Determine prediction
-        prediction_label = "Cheater" if confidence > 0.5 else "Honest"
-        
-        # Analyze risk factors including timing
-        risk_factors = self._analyze_risk_factors_with_timing(moves, times, confidence, player_color)
-        
-        # Generate explanation
-        explanation = self._generate_explanation_with_context(moves, times, confidence, risk_factors, player_color)
-        
-        # Calculate confidence level
-        confidence_level = self._get_confidence_level(confidence)
-        
-        return {
-            'prediction': prediction_label,
-            'confidence': confidence,
-            'confidence_level': confidence_level,
-            'explanation': explanation,
-            'risk_factors': risk_factors,
-            'move_count': len(moves),
-            'player_color': player_color
-        }
-    
-    def _analyze_risk_factors_with_timing(self, moves: List[str], times: np.ndarray, confidence: float, player_color: str) -> List[Dict]:
-        """Analyze risk factors based purely on pattern recognition"""
-        risk_factors = []
-        
-        if not moves:
-            return risk_factors
-        
-        # Pure pattern recognition - no derived statistics
-        if len(moves) > 10:
-            # Look for repetitive move patterns (3-move sequences)
-            move_chunks = [moves[i:i+3] for i in range(len(moves)-2)]
-            unique_chunks = len(set(tuple(chunk) for chunk in move_chunks))
-            pattern_variety = unique_chunks / len(move_chunks)
-            
-            if pattern_variety < 0.3:
-                risk_factors.append({
-                    'factor': 'Repetitive move patterns',
-                    'value': pattern_variety,
-                    'risk_level': 'medium',
-                    'description': f'Low move pattern variety ({pattern_variety:.2f}), might indicate engine usage'
-                })
-        
-        # Check for move length consistency patterns
-        if len(moves) > 5:
-            move_lengths = [len(m) for m in moves]
-            length_std = np.std(move_lengths)
-            if length_std < 0.5:
-                risk_factors.append({
-                    'factor': 'Consistent move lengths',
-                    'value': length_std,
-                    'risk_level': 'medium',
-                    'description': f'Very consistent move lengths (std: {length_std:.2f}), typical of engines'
-                })
-        
-        # Move variety pattern
-        unique_moves = len(set(moves))
-        variety_ratio = unique_moves / len(moves) if len(moves) else 0.0
-        if variety_ratio < 0.3:
-            risk_factors.append({
-                'factor': 'Low move variety',
-                'value': variety_ratio,
-                'risk_level': 'medium',
-                'description': 'Limited move variety, might indicate engine usage'
-            })
-        
-        return risk_factors
-    
-    def _generate_explanation_with_context(self, moves: List[str], times: np.ndarray, confidence: float, 
-                                         risk_factors: List[Dict], player_color: str) -> str:
-        """Generate human-readable explanation with context"""
-        if confidence > 0.8:
-            base_explanation = "The TensorFlow model is highly confident in this prediction."
-        elif confidence > 0.6:
-            base_explanation = "The TensorFlow model shows moderate confidence in this prediction."
-        else:
-            base_explanation = "The TensorFlow model shows low confidence in this prediction."
-        
-        if moves:
-            base_explanation += f" Analyzed {len(moves)} moves."
-            # Pattern analysis summary
-            if len(moves) > 10:
-                move_chunks = [moves[i:i+3] for i in range(len(moves)-2)]
-                unique_chunks = len(set(tuple(chunk) for chunk in move_chunks))
-                pattern_variety = unique_chunks / len(move_chunks)
-                base_explanation += f" Move pattern variety: {pattern_variety:.2f}."
-        
-        base_explanation += f" Player color: {player_color}."
-        if risk_factors:
-            high_risk = [rf for rf in risk_factors if rf['risk_level'] == 'high']
-            medium_risk = [rf for rf in risk_factors if rf['risk_level'] == 'medium']
-            if high_risk:
-                base_explanation += f" {len(high_risk)} high-risk factors detected."
-            if medium_risk:
-                base_explanation += f" {len(medium_risk)} medium-risk factors detected."
-        return base_explanation
-    
-    def _get_confidence_level(self, confidence: float) -> str:
-        if confidence > self.high_confidence_threshold:
-            return "Very High"
-        elif confidence > 0.6:
-            return "High"
-        elif confidence > 0.4:
-            return "Medium"
-        elif confidence > self.low_confidence_threshold:
-            return "Low"
-        else:
-            return "Very Low"
+        self.model = tf.keras.models.load_model(model_path)
+        self.max_len = self.meta['max_len']
+        print(f"✅ TensorFlow model loaded from {model_path}")
 
-def print_player_analysis(result: Dict[str, Any], player_name: str):
+    def score_games(self, games: List[Dict]) -> np.ndarray:
+        """Cheating score (0-1) for each game dict with moves, move_times,
+        player_color and optionally move_losses"""
+        X_moves = np.array([encode_moves(g['moves'], self.vocab, self.max_len) for g in games])
+        X_features = np.array([
+            encode_move_features(g.get('move_times', ''), g.get('move_losses', ''), self.max_len)
+            for g in games
+        ])
+        X_color = np.array([[1.0 if g.get('player_color') == 'white' else 0.0] for g in games])
+        return self.model.predict(as_model_inputs(self.model, X_moves, X_features, X_color),
+                                  verbose=0).ravel()
+
+    def predict_player_moves(self, moves_str: str, move_times_str: str = "",
+                             player_color: str = "white", move_losses_str: str = "") -> Dict[str, Any]:
+        """Score one game from one player's perspective"""
+        moves = [m.strip() for m in moves_str.split(',') if m.strip()] if moves_str else []
+        if not moves:
+            return {'prediction': 'Invalid', 'confidence': 0.0, 'threshold': None,
+                    'explanation': 'No moves provided', 'statistics': {},
+                    'player_color': player_color, 'move_count': 0}
+
+        game = {'moves': moves_str, 'move_times': move_times_str,
+                'move_losses': move_losses_str, 'player_color': player_color}
+        score = float(self.score_games([game])[0])
+        threshold = self.meta['game_threshold']
+        return {
+            'prediction': 'Suspicious' if score > threshold else 'Not suspicious',
+            'confidence': score,
+            'threshold': threshold,
+            'explanation': ("A single game carries little evidence; score the whole "
+                            "account for a reliable verdict."),
+            'statistics': game_statistics(move_times_str, move_losses_str),
+            'move_count': len(moves),
+            'player_color': player_color,
+        }
+
+    def predict_account(self, username: str, max_games: int = 50) -> Dict[str, Any]:
+        """Download a Lichess account's recent rated rapid games and score the account"""
+        from fetch_games import LichessHDF5Fetcher
+
+        fetcher = LichessHDF5Fetcher()
+        response = fetcher.session.get(
+            f'https://lichess.org/api/games/user/{username}',
+            params={'perfType': 'rapid', 'rated': 'true', 'max': max_games,
+                    'clocks': 'true', 'evals': 'true'},
+            headers={'Accept': 'application/x-chess-pgn'}
+        )
+        if response.status_code == 404:
+            return {'error': f"Account '{username}' not found or closed"}
+        response.raise_for_status()
+
+        games = [fetcher._parse_pgn_game(pgn, username)
+                 for pgn in response.text.strip().split('\n\n\n') if '[Event' in pgn]
+        games = [g for g in games if g]
+        if self.meta.get('analysed_only'):
+            # The model was trained on analysed games only; score like-for-like
+            games = [g for g in games if g['move_losses']]
+        if not games:
+            return {'error': f"No usable rated rapid games for '{username}'"
+                             + (" (the model needs games with engine analysis)"
+                                if self.meta.get('analysed_only') else "")}
+
+        scores = self.score_games(games)
+        account_score = float(scores.mean())
+        threshold = self.meta['player_threshold']
+        all_times = ','.join(g['move_times'] for g in games)
+        all_losses = ','.join(g['move_losses'] for g in games if g['move_losses'])
+        return {
+            'username': username,
+            'games': len(games),
+            'account_score': account_score,
+            'threshold': threshold,
+            'prediction': ('Not enough games for a verdict' if len(games) < MIN_ACCOUNT_GAMES
+                           else 'Suspicious' if account_score > threshold else 'Not suspicious'),
+            'most_suspicious_games': sorted(
+                ({'game_id': g['game_id'], 'score': float(s)} for g, s in zip(games, scores)),
+                key=lambda x: x['score'], reverse=True)[:5],
+            'statistics': game_statistics(all_times, all_losses),
+        }
+
+
+def game_statistics(move_times_str: str, move_losses_str: str = "") -> Dict[str, float]:
+    """Plain timing and accuracy statistics, for context next to the model's score.
+    These describe the play; they are not verdicts on their own."""
+    times = [t for t in _parse_floats(move_times_str, 100_000) if t is not None]
+    losses = [l for l in _parse_floats(move_losses_str, 100_000) if l is not None]
+    stats = {}
+    if times:
+        mean_time = float(np.mean(times))
+        stats['mean_think_time_s'] = round(mean_time, 2)
+        stats['think_time_variation'] = round(float(np.std(times) / mean_time), 2) if mean_time > 0 else 0.0
+        stats['share_moves_under_2s'] = round(float(np.mean(np.array(times) < 2)), 2)
+    if losses:
+        stats['analysed_moves'] = len(losses)
+        stats['mean_win_pct_loss'] = round(float(np.mean(losses)), 2)
+        stats['share_near_perfect_moves'] = round(float(np.mean(np.array(losses) < 1)), 2)
+        stats['share_mistakes'] = round(float(np.mean(np.array(losses) >= 10)), 2)
+    return stats
+
+
+STAT_LABELS = {
+    'mean_think_time_s': 'Mean think time (s)',
+    'think_time_variation': 'Think-time variation (std / mean)',
+    'share_moves_under_2s': 'Share of moves under 2s',
+    'analysed_moves': 'Moves with engine evaluation',
+    'mean_win_pct_loss': 'Mean win-chance loss per move (%)',
+    'share_near_perfect_moves': 'Share of near-perfect moves (<1% loss)',
+    'share_mistakes': 'Share of mistakes (>=10% loss)',
+}
+
+
+def print_statistics(stats: Dict[str, float]):
+    if not stats:
+        print("Statistics: none available")
+        return
+    print("Statistics:")
+    for key, value in stats.items():
+        print(f"  {STAT_LABELS.get(key, key)}: {value}")
+
+
+def print_account_analysis(result: Dict[str, Any]):
     if 'error' in result:
         print(f"❌ {result['error']}")
         return
+    print("=" * 60)
+    print(f"ACCOUNT: {result['username']}")
+    print("=" * 60)
+    print(f"PREDICTION: {result['prediction']}")
+    print(f"Account score: {result['account_score']:.4f} (threshold {result['threshold']:.4f}, "
+          f"mean over {result['games']} games)")
+    print("Most suspicious games:")
+    for game in result['most_suspicious_games']:
+        print(f"  https://lichess.org/{game['game_id']}  score {game['score']:.3f}")
+    print_statistics(result['statistics'])
+    print("=" * 60)
+
+
+def print_player_analysis(result: Dict[str, Any], player_name: str):
     print("=" * 60)
     print(f"{player_name.upper()} ANALYSIS")
     print("=" * 60)
     print(f"Player Color: {result['player_color']}")
     print(f"PREDICTION: {result['prediction']}")
-    print(f"Confidence: {result['confidence']:.4f} ({result['confidence_level']})")
+    if result['move_count']:
+        print(f"Score: {result['confidence']:.4f} (threshold {result['threshold']:.4f})")
     print(f"Move Count: {result['move_count']}")
-    print(f"\nExplanation: {result['explanation']}")
-    if result['risk_factors']:
-        print(f"\nRisk Factors:")
-        for i, factor in enumerate(result['risk_factors'], 1):
-            print(f"  {i}. {factor['factor']} (Risk: {factor['risk_level'].upper()})")
-            print(f"     Value: {factor['value']:.3f}")
-            print(f"     Description: {factor['description']}")
-    else:
-        print(f"\nRisk Factors: None detected")
+    print(f"\n{result['explanation']}")
+    print_statistics(result['statistics'])
     print("=" * 60)
+
+
+def analyse_typed_game(predictor: TensorFlowChessPredictor):
+    for color in ('white', 'black'):
+        print(f"\nEnter {color}'s moves (comma-separated, SAN; blank to skip):")
+        moves = input().strip()
+        if not moves:
+            continue
+        print(f"Enter {color}'s think times (comma-separated seconds, optional):")
+        times = input().strip()
+        print(f"Enter {color}'s per-move win-chance losses (comma-separated, optional):")
+        losses = input().strip()
+        result = predictor.predict_player_moves(moves, times, color, losses)
+        print_player_analysis(result, f"{color} player")
+
 
 def main():
     print("🎯 TensorFlow Chess Anti-Cheat Prediction")
     print("=" * 50)
-    
-    # Determine model path preference
-    model_path = None
-    if os.path.exists("advanced_chess_model.keras"):
-        model_path = "advanced_chess_model.keras"
-    elif os.path.exists("advanced_chess_model.h5"):
-        model_path = "advanced_chess_model.h5"
-    else:
-        print("❌ No model file found. Train the model first: python train_tensorflow.py")
-        return
-    
-    vocab_path = "hdf5_vocab.pkl"
-    if not os.path.exists(vocab_path):
-        print(f"❌ {vocab_path} not found. Please run training first.")
-        return
-    
     try:
-        predictor = TensorFlowChessPredictor(model_path, vocab_path)
+        predictor = TensorFlowChessPredictor()
     except Exception as e:
         print(f"❌ Error loading TensorFlow model: {e}")
         return
-    
-    print("\n" + "=" * 60)
-    print("INTERACTIVE GAME ANALYSIS (TensorFlow)")
-    print("=" * 60)
-    print("Enter game data in the following format:")
-    print("1. White moves (comma-separated)")
-    print("2. Black moves (comma-separated)")
-    print("3. White move times (comma-separated seconds)")
-    print("4. Black move times (comma-separated seconds)")
-    print("5. White result (win/loss/draw)")
-    print("6. Black result (win/loss/draw)")
-    print("Type 'quit' to exit")
-    print("=" * 60)
-    
+
     while True:
+        print("\n1. Analyse a Lichess account (recommended)")
+        print("2. Analyse one game from typed-in moves")
+        print("3. Quit")
+        choice = input("Choice: ").strip().lower()
         try:
-            print("\n" + "-" * 40)
-            print("Enter game data:")
-            print("-" * 40)
-            print("Enter white moves (comma-separated):")
-            white_moves = input().strip()
-            if white_moves.lower() == 'quit':
+            if choice == '1':
+                username = input("Lichess username: ").strip()
+                games = int(input("Games to analyse (default 50): ").strip() or "50")
+                print(f"📥 Downloading and scoring {username}'s games...")
+                print_account_analysis(predictor.predict_account(username, games))
+            elif choice == '2':
+                analyse_typed_game(predictor)
+            elif choice in ('3', 'q', 'quit'):
                 break
-            print("Enter black moves (comma-separated):")
-            black_moves = input().strip()
-            if black_moves.lower() == 'quit':
-                break
-            print("Enter white move times (comma-separated seconds):")
-            white_times = input().strip()
-            if white_times.lower() == 'quit':
-                break
-            print("Enter black move times (comma-separated seconds):")
-            black_times = input().strip()
-            if black_times.lower() == 'quit':
-                break
-            print("Enter white result (win/loss/draw):")
-            white_result = input().strip()
-            if white_result.lower() == 'quit':
-                break
-            print("Enter black result (win/loss/draw):")
-            black_result = input().strip()
-            if black_result.lower() == 'quit':
-                break
-            if not white_moves or not black_moves:
-                print("❌ Both white and black moves are required!")
-                continue
-            print("\n" + "🔍" * 20)
-            print("ANALYZING WHITE PLAYER (TensorFlow)")
-            print("🔍" * 20)
-            white_result_analysis = predictor.predict_player_moves(white_moves, white_times, "white")
-            print_player_analysis(white_result_analysis, "WHITE PLAYER")
-            print("\n" + "🔍" * 20)
-            print("ANALYZING BLACK PLAYER (TensorFlow)")
-            print("🔍" * 20)
-            black_result_analysis = predictor.predict_player_moves(black_moves, black_times, "black")
-            print_player_analysis(black_result_analysis, "BLACK PLAYER")
-            print("\n" + "📊" * 20)
-            print("GAME SUMMARY (TensorFlow)")
-            print("📊" * 20)
-            print(f"White Player: {white_result_analysis['prediction']} (Confidence: {white_result_analysis['confidence']:.3f})")
-            print(f"Black Player: {black_result_analysis['prediction']} (Confidence: {black_result_analysis['confidence']:.3f})")
-            print(f"White Result: {white_result}")
-            print(f"Black Result: {black_result}")
-            white_cheating = white_result_analysis['prediction'] == 'Cheater'
-            black_cheating = black_result_analysis['prediction'] == 'Cheater'
-            if white_cheating and black_cheating:
-                game_assessment = "BOTH PLAYERS SUSPICIOUS"
-            elif white_cheating:
-                game_assessment = "WHITE PLAYER SUSPICIOUS"
-            elif black_cheating:
-                game_assessment = "BLACK PLAYER SUSPICIOUS"
-            else:
-                game_assessment = "BOTH PLAYERS APPEAR HONEST"
-            print(f"\n🎯 GAME ASSESSMENT: {game_assessment}")
-            print("📊" * 20)
         except Exception as e:
-            print(f"Error analyzing game: {e}")
-            print("Please check your data format and try again.")
+            print(f"Error: {e}")
+
 
 if __name__ == "__main__":
     main()

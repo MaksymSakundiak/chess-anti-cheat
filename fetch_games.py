@@ -21,7 +21,17 @@ warnings.filterwarnings('ignore')
 PGN_TOKEN_RE = re.compile(r'\{[^}]*\}|\S+')
 MOVE_NUMBER_RE = re.compile(r'\d+\.(\.\.)?')
 CLOCK_RE = re.compile(r'\[%clk (\d+):(\d+):(\d+(?:\.\d+)?)\]')
+EVAL_RE = re.compile(r'\[%eval (#?)(-?\d+(?:\.\d+)?)\]')
+START_EVAL_CP = 20     # Engine eval of the initial position, white's view
+MAX_EVAL_CP = 1000     # Clip evals (and forced mates) to +-10 pawns
 PGN_RESULTS = {'1-0', '0-1', '1/2-1/2', '*'}
+
+def win_percent(eval_cp: float) -> float:
+    """White's winning chances (0-100) for a centipawn eval, using the model
+    behind Lichess's accuracy metric"""
+    eval_cp = max(-MAX_EVAL_CP, min(MAX_EVAL_CP, eval_cp))
+    return 50 + 50 * (2 / (1 + np.exp(-0.00368208 * eval_cp)) - 1)
+
 
 class LichessHDF5Fetcher:
     """Enhanced Lichess data fetcher for HDF5 format with player-level granularity"""
@@ -347,18 +357,27 @@ class LichessHDF5Fetcher:
             # NAGs ($1) and comments like { [%eval 0.18] [%clk 0:10:00] }
             moves = []
             clocks = []  # Remaining clock (seconds) after each move
+            evals = []   # Engine eval (centipawns, white's view) after each move, if analysed
             for token in PGN_TOKEN_RE.findall(' '.join(movetext_lines)):
                 if token.startswith('{'):
                     clock = CLOCK_RE.search(token)
                     if clock and moves:
                         hours, minutes, seconds = clock.groups()
                         clocks[-1] = int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+                    evaluation = EVAL_RE.search(token)
+                    if evaluation and moves:
+                        is_mate, value = evaluation.groups()
+                        if is_mate:
+                            evals[-1] = MAX_EVAL_CP if not value.startswith('-') else -MAX_EVAL_CP
+                        else:
+                            evals[-1] = float(value) * 100
                 elif MOVE_NUMBER_RE.fullmatch(token) or token in PGN_RESULTS or token.startswith('$'):
                     continue
                 else:
                     # Drop Lichess's engine annotations (?!, ??, !) so tokens are plain SAN
                     moves.append(token.rstrip('?!'))
                     clocks.append(None)
+                    evals.append(None)
             
             # Determine if the fetched player is white or black
             white_player = game_info.get('White', '').lower()
@@ -379,9 +398,14 @@ class LichessHDF5Fetcher:
             # Extract this player's moves and how long each took:
             # time spent = clock before the move - clock after the move + increment.
             # Lichess doesn't run the clock for each side's first move, so it counts as 0.
+            #
+            # Also record how much winning chance each move threw away (0-100, from
+            # this player's view), from the evals before and after it. Empty when
+            # the game wasn't analysed (no eval) or for the final mating move.
             first_index = 0 if player_color == 'white' else 1
             player_moves = []
             move_times = []
+            move_losses = []
             for i in range(first_index, len(moves), 2):
                 player_moves.append(moves[i])
                 if i < 2:
@@ -389,6 +413,16 @@ class LichessHDF5Fetcher:
                 else:
                     spent = clocks[i - 2] - clocks[i] + increment
                     move_times.append(round(max(spent, 0.0), 2))
+                
+                before = START_EVAL_CP if i == 0 else evals[i - 1]
+                after = evals[i]
+                if before is None or after is None:
+                    move_losses.append('')
+                else:
+                    drop = win_percent(before) - win_percent(after)
+                    if player_color == 'black':
+                        drop = -drop
+                    move_losses.append(str(round(drop, 2) if drop > 0 else 0.0))
             
             if not player_moves:
                 return None
@@ -406,6 +440,7 @@ class LichessHDF5Fetcher:
                 'player_color': player_color,
                 'moves': ','.join(player_moves),
                 'move_times': ','.join(map(str, move_times)),
+                'move_losses': ','.join(move_losses) if any(move_losses) else '',
                 'result': player_result,
                 'label': label
             }
