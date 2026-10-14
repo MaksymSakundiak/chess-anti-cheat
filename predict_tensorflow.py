@@ -14,7 +14,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Fallback: import the model builder to reconstruct architecture if needed
-from improved_tensorflow_model import AdvancedChessClassifier
+from improved_tensorflow_model import AdvancedChessClassifier, encode_moves, encode_times
 
 class TensorFlowChessPredictor:
     """TensorFlow-based predictor for chess anti-cheat detection"""
@@ -78,34 +78,10 @@ class TensorFlowChessPredictor:
                 'player_color': player_color
             }
         
-        # Tokenize moves
-        moves = moves_str.split(',') if isinstance(moves_str, str) else []
-        tokens = [self.vocab.get(move.strip(), self.vocab['<unk>']) for move in moves]
-        
-        # Pad or truncate
-        if len(tokens) > max_len:
-            tokens = tokens[:max_len]
-        else:
-            tokens = tokens + [self.vocab['<PAD>']] * (max_len - len(tokens))
-        
-        # Process move times
-        if move_times_str:
-            if isinstance(move_times_str, str):
-                times = [float(t.strip()) for t in move_times_str.split(',') if t.strip()]
-            else:
-                times = move_times_str if isinstance(move_times_str, list) else []
-            
-            if len(times) > max_len:
-                times = times[:max_len]
-            else:
-                times = times + [0.0] * (max_len - len(times))
-        else:
-            times = [0.0] * max_len
-        
-        # Normalize times
-        times = np.array(times)
-        if np.std(times) > 0:
-            times = (times - np.mean(times)) / np.std(times)
+        # Encode exactly as in training
+        moves = [m.strip() for m in moves_str.split(',') if m.strip()]
+        tokens = encode_moves(moves_str, self.vocab, max_len)
+        times = encode_times(move_times_str, max_len)
         
         # Color encoding (white=1, black=0)
         color = 1.0 if player_color == 'white' else 0.0

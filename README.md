@@ -82,8 +82,8 @@ python predict_tensorflow.py
 The TensorFlow model provides:
 
 - **Better Pattern Recognition**: Conv1D layers detect local patterns
-- **Improved Timing Analysis**: Normalized time features
-- **Enhanced Architecture**: Bidirectional LSTM + Attention mechanisms
+- **Real Timing Analysis**: Per-move think times from Lichess clock data
+- **Enhanced Architecture**: Bidirectional LSTM + Conv1D
 - **Advanced Callbacks**: Early stopping, learning rate reduction, TensorBoard
 
 ## 🔍 Usage Examples
@@ -105,16 +105,15 @@ python predict_tensorflow.py
 ### Programmatic Usage
 
 ```python
-from improved_tensorflow_model import AdvancedChessClassifier
+from predict_tensorflow import TensorFlowChessPredictor
 
-# Load model
-classifier = AdvancedChessClassifier()
-classifier.load_model('advanced_chess_model.h5')
+# Load model and vocabulary (advanced_chess_model.keras, hdf5_vocab.pkl)
+predictor = TensorFlowChessPredictor()
 
 # Make prediction
-result = classifier.predict_player_moves(
-    moves="e4,e5,Nf3,Nc6",
-    move_times="2.1,1.8,3.2,2.9",
+result = predictor.predict_player_moves(
+    "e4,Nf3,Bb5,O-O",       # this player's moves
+    "0.0,3.2,4.1,2.9",      # seconds spent on each move
     player_color="white"
 )
 ```
@@ -136,15 +135,15 @@ The cleaned dataset contains only essential features:
 ### TensorFlow Advantages
 
 - **Better Pattern Recognition**: Conv1D layers detect local move patterns
-- **Improved Timing Analysis**: Normalized time features with statistical analysis
-- **Enhanced Architecture**: Bidirectional LSTM + Attention mechanisms
+- **Real Timing Analysis**: Think times derived from Lichess `[%clk]` annotations, log-scaled
+- **Enhanced Architecture**: Bidirectional LSTM + Conv1D
 - **Advanced Training**: Early stopping, learning rate reduction, TensorBoard logging
 
 ### Data Pipeline Improvements
 
 - **Clean Dataset**: Removed useless columns (game_id, player_id, opponent_id)
 - **Optimized Format**: Only essential features for cheating detection
-- **Better Preprocessing**: Normalized timing data and improved feature engineering
+- **Honest Evaluation**: Train/validation/test split by player, so no player appears in more than one set
 
 ### Model Architecture
 
@@ -170,9 +169,9 @@ class AdvancedChessClassifier:
 history = classifier.train(
     df=train_df,
     vocab=vocab,
-    epochs=30,        # Increase for better performance
+    epochs=10,        # Increase for better performance
     batch_size=64,    # Adjust based on memory
-    validation_split=0.2
+    val_df=val_df     # Validation players, split by player
 )
 ```
 
@@ -180,10 +179,11 @@ history = classifier.train(
 
 The TensorFlow model tracks:
 
-- **Accuracy**: Overall prediction accuracy
-- **Precision**: True positive rate
-- **Recall**: Sensitivity to cheaters
-- **F1 Score**: Harmonic mean of precision and recall
+- **Accuracy**: Overall prediction accuracy, shown next to the always-"honest" baseline
+- **Balanced Accuracy**: Mean of per-class recall, robust to class imbalance
+- **Precision**: Share of flagged players who are cheaters
+- **Recall**: Share of cheaters who get flagged
+- **F1 Score**: Harmonic mean of cheater precision and recall
 - **AUC**: Area under ROC curve
 
 ## 🚀 Advanced Features

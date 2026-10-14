@@ -26,8 +26,48 @@ from sklearn.preprocessing import StandardScaler
 import pickle
 import os
 from typing import Dict, List, Tuple, Any
+from collections import Counter
 import warnings
 warnings.filterwarnings('ignore')
+
+def build_vocab(df: pd.DataFrame, min_freq: int = 3) -> Dict[str, int]:
+    """Build a move vocabulary; moves seen fewer than min_freq times map to <unk>"""
+    move_counts = Counter(
+        move.strip()
+        for moves_str in df['moves'] if isinstance(moves_str, str)
+        for move in moves_str.split(',') if move.strip()
+    )
+    vocab = {'<PAD>': 0, '<unk>': 1}
+    for move, count in move_counts.items():
+        if count >= min_freq:
+            vocab[move] = len(vocab)
+    return vocab
+
+def encode_moves(moves_str: str, vocab: Dict[str, int], max_len: int) -> List[int]:
+    """Tokenize comma-separated moves, truncated / padded to max_len"""
+    moves = moves_str.split(',') if isinstance(moves_str, str) else []
+    tokens = [vocab.get(move.strip(), vocab['<unk>']) for move in moves if move.strip()]
+    tokens = tokens[:max_len]
+    return tokens + [vocab['<PAD>']] * (max_len - len(tokens))
+
+def encode_times(times_str, max_len: int) -> np.ndarray:
+    """Encode move times (seconds) as log1p, truncated / zero-padded to max_len.
+
+    A fixed transform keeps absolute speed and consistency visible to the model
+    (per-game z-scoring erased both) and leaves padding at exactly 0.
+    """
+    if isinstance(times_str, str):
+        times = [float(t) for t in times_str.split(',') if t.strip()]
+    else:
+        times = list(times_str) if isinstance(times_str, (list, np.ndarray)) else []
+    encoded = np.zeros(max_len, dtype=np.float32)
+    times = np.log1p(np.clip(times[:max_len], 0, None))
+    encoded[:len(times)] = times
+    return encoded
+
+# Keras' default (0.99) leaves inference-time BatchNorm statistics lagging far
+# behind training on datasets this small, squashing predictions toward the prior
+BN_MOMENTUM = 0.9
 
 class AdvancedChessClassifier:
     """Advanced TensorFlow/Keras model for chess anti-cheat detection"""
@@ -58,15 +98,15 @@ class AdvancedChessClassifier:
         
         # Conv1D layers for local pattern detection
         conv1 = Conv1D(64, 3, activation='relu', padding='same')(lstm_out)
-        conv1 = BatchNormalization()(conv1)
+        conv1 = BatchNormalization(momentum=BN_MOMENTUM)(conv1)
         conv1 = MaxPooling1D(2)(conv1)
         
         conv2 = Conv1D(128, 5, activation='relu', padding='same')(conv1)
-        conv2 = BatchNormalization()(conv2)
+        conv2 = BatchNormalization(momentum=BN_MOMENTUM)(conv2)
         conv2 = MaxPooling1D(2)(conv2)
         
         conv3 = Conv1D(256, 7, activation='relu', padding='same')(conv2)
-        conv3 = BatchNormalization()(conv3)
+        conv3 = BatchNormalization(momentum=BN_MOMENTUM)(conv3)
         conv3 = GlobalMaxPooling1D()(conv3)
         
         # Time features processing - FIXED: Reshape to 3D for GlobalMaxPooling1D
@@ -84,15 +124,15 @@ class AdvancedChessClassifier:
         
         # Dense layers with residual connections
         dense1 = Dense(512, activation='relu')(combined)
-        dense1 = BatchNormalization()(dense1)
+        dense1 = BatchNormalization(momentum=BN_MOMENTUM)(dense1)
         dense1 = Dropout(0.4)(dense1)
         
         dense2 = Dense(256, activation='relu')(dense1)
-        dense2 = BatchNormalization()(dense2)
+        dense2 = BatchNormalization(momentum=BN_MOMENTUM)(dense2)
         dense2 = Dropout(0.3)(dense2)
         
         dense3 = Dense(128, activation='relu')(dense2)
-        dense3 = BatchNormalization()(dense3)
+        dense3 = BatchNormalization(momentum=BN_MOMENTUM)(dense3)
         dense3 = Dropout(0.2)(dense3)
         
         # Output layer
@@ -182,33 +222,8 @@ class AdvancedChessClassifier:
         labels = []
         
         for _, row in df.iterrows():
-            # Tokenize moves
-            moves_str = row['moves']
-            moves = moves_str.split(',') if isinstance(moves_str, str) else []
-            tokens = [vocab.get(move.strip(), vocab['<unk>']) for move in moves]
-            
-            # Pad or truncate
-            if len(tokens) > self.max_len:
-                tokens = tokens[:self.max_len]
-            else:
-                tokens = tokens + [vocab['<PAD>']] * (self.max_len - len(tokens))
-            
-            # Process move times
-            times_str = row['move_times']
-            if isinstance(times_str, str):
-                times = [float(t.strip()) for t in times_str.split(',') if t.strip()]
-            else:
-                times = times_str if isinstance(times_str, list) else []
-            
-            if len(times) > self.max_len:
-                times = times[:self.max_len]
-            else:
-                times = times + [0.0] * (self.max_len - len(times))
-            
-            # Normalize times
-            times = np.array(times)
-            if np.std(times) > 0:
-                times = (times - np.mean(times)) / np.std(times)
+            tokens = encode_moves(row['moves'], vocab, self.max_len)
+            times = encode_times(row['move_times'], self.max_len)
             
             # Color encoding (white=1, black=0)
             color = 1.0 if row['player_color'] == 'white' else 0.0
@@ -234,13 +249,28 @@ class AdvancedChessClassifier:
     
     def train(self, df: pd.DataFrame, vocab: Dict[str, int], 
               epochs: int = 50, batch_size: int = 32, 
-              validation_split: float = 0.2) -> Dict:
-        """Train the advanced model"""
+              validation_split: float = 0.2,
+              val_df: pd.DataFrame = None) -> Dict:
+        """Train the advanced model.
+
+        Pass val_df (split by player) to validate on unseen players; otherwise
+        Keras holds out the last validation_split of df.
+        """
         
         print("🚀 Starting advanced TensorFlow training...")
         
         # Prepare data
         X_moves, X_times, X_color, y = self.prepare_data(df, vocab)
+        if val_df is not None:
+            X_moves_val, X_times_val, X_color_val, y_val = self.prepare_data(val_df, vocab)
+            validation = {'validation_data': ([X_moves_val, X_times_val, X_color_val], y_val)}
+        else:
+            validation = {'validation_split': validation_split}
+        
+        # Weight classes inversely to frequency so the minority (cheaters) isn't ignored
+        counts = np.bincount(y.astype(int), minlength=2)
+        class_weight = {c: len(y) / (2 * counts[c]) for c in (0, 1) if counts[c] > 0}
+        print(f"⚖️ Class weights: {class_weight}")
         
         # Build and compile model
         self.build_model()
@@ -255,8 +285,9 @@ class AdvancedChessClassifier:
             y,
             epochs=epochs,
             batch_size=batch_size,
-            validation_split=validation_split,
+            class_weight=class_weight,
             callbacks=callbacks,
+            **validation,
             verbose=1
         )
         
@@ -273,21 +304,29 @@ class AdvancedChessClassifier:
         predictions = self.model.predict([X_moves, X_times, X_color])
         
         # Calculate metrics
-        from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+        from sklearn.metrics import (
+            accuracy_score, balanced_accuracy_score, confusion_matrix,
+            precision_recall_fscore_support, roc_auc_score
+        )
         
         # Convert predictions to binary
         y_pred_binary = (predictions > 0.5).astype(int)
         
-        # Calculate metrics
-        report = classification_report(y, y_pred_binary, output_dict=True)
-        cm = confusion_matrix(y, y_pred_binary)
+        # Precision / recall / F1 for the cheater class: weighted averages are
+        # dominated by the honest majority and hide missed cheaters
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            y, y_pred_binary, pos_label=1, average='binary', zero_division=0
+        )
+        cm = confusion_matrix(y, y_pred_binary, labels=[0, 1])
         auc = roc_auc_score(y, predictions)
         
         results = {
-            'accuracy': report['accuracy'],
-            'precision': report['weighted avg']['precision'],
-            'recall': report['weighted avg']['recall'],
-            'f1': report['weighted avg']['f1-score'],
+            'accuracy': accuracy_score(y, y_pred_binary),
+            'balanced_accuracy': balanced_accuracy_score(y, y_pred_binary),
+            'baseline_accuracy': max(np.mean(y), 1 - np.mean(y)),
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
             'auc': auc,
             'confusion_matrix': cm,
             'predictions': predictions.flatten(),
@@ -295,11 +334,13 @@ class AdvancedChessClassifier:
         }
         
         print("📊 Evaluation Results:")
-        print(f"  Accuracy: {results['accuracy']:.4f}")
-        print(f"  Precision: {results['precision']:.4f}")
-        print(f"  Recall: {results['recall']:.4f}")
-        print(f"  F1 Score: {results['f1']:.4f}")
+        print(f"  Accuracy: {results['accuracy']:.4f} (always-majority baseline: {results['baseline_accuracy']:.4f})")
+        print(f"  Balanced Accuracy: {results['balanced_accuracy']:.4f}")
+        print(f"  Cheater Precision: {results['precision']:.4f}")
+        print(f"  Cheater Recall: {results['recall']:.4f}")
+        print(f"  Cheater F1 Score: {results['f1']:.4f}")
         print(f"  AUC: {results['auc']:.4f}")
+        print(f"  Confusion matrix [[TN FP] [FN TP]]: {cm.tolist()}")
         
         return results
     
@@ -314,46 +355,9 @@ class AdvancedChessClassifier:
         print(f"✅ Model loaded from {model_path}")
 
 def main():
-    """Test the advanced TensorFlow model"""
-    print("🎯 Advanced TensorFlow Chess Anti-Cheat Model")
-    print("=" * 50)
-    
-    # Check if TensorFlow is available
-    try:
-        import tensorflow as tf
-        print(f"✅ TensorFlow version: {tf.__version__}")
-    except ImportError:
-        print("❌ TensorFlow not found. Please install: pip install tensorflow")
-        return
-    
-    # Load data
-    try:
-        import pandas as pd
-        df = pd.read_hdf('data/combined_games.h5', key='chess_data')
-        print(f"✅ Loaded {len(df)} records")
-    except Exception as e:
-        print(f"❌ Error loading data: {e}")
-        return
-    
-    # Load vocabulary
-    try:
-        with open('hdf5_vocab.pkl', 'rb') as f:
-            vocab = pickle.load(f)
-        print(f"✅ Loaded vocabulary with {len(vocab)} tokens")
-    except Exception as e:
-        print(f"❌ Error loading vocabulary: {e}")
-        return
-    
-    # Create and train model
-    classifier = AdvancedChessClassifier(vocab_size=len(vocab))
-    
-    # Train the model
-    history = classifier.train(df, vocab, epochs=20, batch_size=64)
-    
-    # Save the model
-    classifier.save_model()
-    
-    print("🎉 Advanced TensorFlow training complete!")
+    """Train via train_tensorflow.py, which splits by player and builds the vocabulary"""
+    import train_tensorflow
+    train_tensorflow.main()
 
 if __name__ == "__main__":
     main()

@@ -10,14 +10,14 @@ import pandas as pd
 import pickle
 import os
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
 import warnings
 warnings.filterwarnings('ignore')
 
 # Import our advanced model
 try:
-    from improved_tensorflow_model import AdvancedChessClassifier
+    from improved_tensorflow_model import AdvancedChessClassifier, build_vocab
 except ImportError:
     print("❌ improved_tensorflow_model not found. Make sure improved_tensorflow_model.py is in the current directory.")
     exit(1)
@@ -66,6 +66,15 @@ def plot_training_history(history):
     plt.savefig('tensorflow_training_history.png', dpi=300, bbox_inches='tight')
     plt.show()
 
+def split_by_player(df, test_fraction=0.2, random_state=42):
+    """Split so each player's games land in exactly one side, keeping the
+    cheater/honest ratio. A row-level split puts the same player's games in
+    both sides, letting the model memorize players instead of detecting cheating."""
+    n_splits = round(1 / test_fraction)
+    splitter = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    train_idx, test_idx = next(splitter.split(df, df['label'], groups=df['username'].str.lower()))
+    return df.iloc[train_idx], df.iloc[test_idx]
+
 def main():
     """Main TensorFlow training function"""
     print("🎯 TensorFlow Chess Anti-Cheat Training")
@@ -93,25 +102,28 @@ def main():
     df = pd.read_hdf(hdf5_file, key='chess_data')
     print(f"✅ Loaded {len(df)} records from {hdf5_file}")
     
-    # Load vocabulary
-    vocab_file = "hdf5_vocab.pkl"
-    if not os.path.exists(vocab_file):
-        print(f"❌ {vocab_file} not found. Please run training first.")
+    if 'username' not in df.columns:
+        print("❌ Dataset has no 'username' column (it predates the player-level split). "
+              "Delete the files in data/ and re-run fetch_games.py.")
         return
     
-    with open(vocab_file, 'rb') as f:
-        vocab = pickle.load(f)
-    print(f"✅ Loaded vocabulary with {len(vocab)} tokens")
-    
-    # Split data for training and testing
-    print("🔄 Splitting data...")
-    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42, stratify=df['label'])
+    # Split by player: test players and validation players are never seen in training
+    print("🔄 Splitting data by player...")
+    train_df, test_df = split_by_player(df, test_fraction=0.2)
+    train_df, val_df = split_by_player(train_df, test_fraction=0.2)
     
     print(f"📊 Data split:")
-    print(f"   - Training: {len(train_df)} samples")
-    print(f"   - Testing: {len(test_df)} samples")
-    print(f"   - Training cheaters: {train_df['label'].sum()}")
-    print(f"   - Testing cheaters: {test_df['label'].sum()}")
+    for name, part in [("Training", train_df), ("Validation", val_df), ("Testing", test_df)]:
+        players = part.groupby(part['username'].str.lower())['label'].first()
+        print(f"   - {name}: {len(part)} games from {len(players)} players "
+              f"({int(players.sum())} cheaters, {int(part['label'].sum())} cheater games)")
+    
+    # Build vocabulary from training players only, so test moves can't leak in
+    vocab = build_vocab(train_df)
+    vocab_file = "hdf5_vocab.pkl"
+    with open(vocab_file, 'wb') as f:
+        pickle.dump(vocab, f)
+    print(f"✅ Built vocabulary with {len(vocab)} tokens -> {vocab_file}")
     
     # Create and train model
     print("🏗️ Building advanced TensorFlow model...")
@@ -124,7 +136,7 @@ def main():
         vocab=vocab, 
         epochs=10,  # Reduced epochs for faster training
         batch_size=64,
-        validation_split=0.2
+        val_df=val_df
     )
     
     # Plot training history
@@ -145,10 +157,11 @@ def main():
     print("🎉 TRAINING COMPLETE!")
     print("=" * 50)
     print(f"📊 Final Test Results:")
-    print(f"   - Accuracy: {results['accuracy']:.4f}")
-    print(f"   - Precision: {results['precision']:.4f}")
-    print(f"   - Recall: {results['recall']:.4f}")
-    print(f"   - F1 Score: {results['f1']:.4f}")
+    print(f"   - Accuracy: {results['accuracy']:.4f} (always-majority baseline: {results['baseline_accuracy']:.4f})")
+    print(f"   - Balanced Accuracy: {results['balanced_accuracy']:.4f}")
+    print(f"   - Cheater Precision: {results['precision']:.4f}")
+    print(f"   - Cheater Recall: {results['recall']:.4f}")
+    print(f"   - Cheater F1 Score: {results['f1']:.4f}")
     print(f"   - AUC: {results['auc']:.4f}")
     print(f"\n💾 Model saved as: {out_path}")
     print(f"📈 Training plot saved as: tensorflow_training_history.png")

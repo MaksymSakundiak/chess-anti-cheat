@@ -27,13 +27,13 @@ python predict_tensorflow.py
 
 ### ✅ **Better Pattern Recognition**
 - **Multi-Modal Input**: Moves + timing + color
-- **Normalized Features**: Statistical preprocessing
+- **Real Move Times**: Taken from Lichess clock data
 - **Risk Factor Analysis**: Comprehensive cheating detection
 
 ### ✅ **Clean Data Pipeline**
 - **Essential Features Only**: Removed useless columns
 - **Optimized Format**: Faster processing
-- **Better Preprocessing**: Normalized timing data
+- **Player-Level Split**: Test players are never seen in training
 
 ## 🎯 Example Usage
 
@@ -75,10 +75,10 @@ Risk Factors:
 ## 📈 Model Performance
 
 ### Training Metrics
-- **Accuracy**: ~85-90%
-- **AUC**: ~0.88-0.92
-- **Training Time**: 10-30 minutes (CPU)
-- **Model Size**: ~50-100MB
+Training prints test-set accuracy next to the always-"honest" baseline, plus
+balanced accuracy, cheater precision/recall/F1 and AUC. With ~13% cheater
+games, accuracy alone is misleading: judge the model by balanced accuracy,
+cheater recall and AUC on the player-level test split.
 
 ### Detection Capabilities
 - **Timing Patterns**: Suspiciously fast/consistent moves
@@ -102,9 +102,9 @@ class AdvancedChessClassifier:
 history = classifier.train(
     df=train_df, 
     vocab=vocab, 
-    epochs=30,        # More epochs = better performance
+    epochs=10,        # More epochs = better performance
     batch_size=64,    # Adjust based on memory
-    validation_split=0.2
+    val_df=val_df     # Validation players, split by player
 )
 ```
 
@@ -133,7 +133,7 @@ batch_size=32  # Instead of 64
 ```bash
 # Use GPU if available
 # Or reduce epochs
-epochs=15  # Instead of 30
+epochs=5  # Instead of 10
 ```
 
 ## 📊 Data Requirements
@@ -195,10 +195,9 @@ Result: win
 ## 🎯 Success Metrics
 
 ### Good Model Performance
-- **Accuracy**: >85%
-- **AUC**: >0.85
-- **Training Time**: <30 minutes
-- **Prediction Time**: <1 second
+- **Balanced Accuracy**: clearly above 0.5
+- **AUC**: clearly above 0.5 on unseen test players
+- **Accuracy**: above the always-"honest" baseline printed during training
 
 ### Expected Detection Rates
 - **High Confidence**: >80% confidence
