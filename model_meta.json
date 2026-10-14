@@ -1,0 +1,10 @@
+{
+  "model_path": "advanced_chess_model.keras",
+  "game_threshold": 0.4763650596141815,
+  "player_threshold": 0.48424437642097473,
+  "max_len": 300,
+  "use_moves": false,
+  "analysed_only": true,
+  "test_game_auc": 0.7266103066367728,
+  "test_player_auc": 0.8421249532360644
+}

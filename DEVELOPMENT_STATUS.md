@@ -4,120 +4,142 @@ _Last updated: 2026-10-14_
 
 ## Summary
 
-The pipeline now trains on real data, end to end: games from human Lichess
-accounts flagged for fair-play violations versus unflagged players, with real
-per-move think times, and an evaluation where test players are never seen in
-training.
+The detector now works at the level that matters, whole accounts. On test
+players it never saw in training, it ranks flagged accounts above honest ones
+with an **AUC of 0.84**, and it judges a single game with an AUC of 0.72.
+These results are averaged over 3 player-level splits of 768 players, with
+about 154 test players per split.
 
-On a 100-player sample, the model is weak at judging a **single game**
-(AUC 0.65). Averaged over a **player's games**, it ranks cheaters well
-(AUC 0.90), but that figure comes from only 20 test players, 8 of them
-cheaters. The main bottleneck is the amount of data, not the code.
+Most of the improvement came from adding engine accuracy as a feature and
+from a much larger dataset. Feeding the move tokens to the model added
+nothing. An earlier figure of 0.90 came from only 20 test players; it was
+noise, and 0.84 is the reliable estimate.
 
 ## Current pipeline
 
-| Step                  | Script                           | What it does                                                                                                                                                                                                                                    |
-| --------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Build player lists | `collect_flagged_players.py`     | Crawls the opponents of the honest players and looks them up on Lichess. Accounts marked `tosViolation` become cheaters; unflagged opponents from the same pool become honest players. It also removes BOT and closed accounts from both lists. |
-| 2. Download games     | `fetch_games.py` (menu option 5) | Downloads rated rapid games per player with clock data, and saves each player's moves and think times to `data/*.h5`.                                                                                                                           |
-| 3. Train              | `train_tensorflow.py`            | Splits train/validation/test **by player**, builds the vocabulary from training players only, weights the classes, trains, and reports metrics for the cheater class.                                                                           |
-| 4. Predict            | `predict_tensorflow.py`          | Scores one player's moves and times in a single game.                                                                                                                                                                                           |
+| Step                  | Script                       | What it does                                                                                                                                                                                                 |
+| --------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Build player lists | `collect_flagged_players.py` | Crawls the honest players' opponents and looks them up on Lichess. Accounts marked `tosViolation` become cheaters; unflagged opponents from the same pool become honest players. Removes BOT and closed accounts. |
+| 2. Download games     | `download_dataset.py`        | Downloads 50 rated rapid games per player with clock data and engine evals. Alternates cheaters and honest players, saves every 25 players, and resumes after interruptions.                                  |
+| 3. Train              | `train_tensorflow.py`        | Splits players into train/validation/test, trains on analysed games, chooses game- and player-level thresholds on validation players, and saves them to `model_meta.json`.                                  |
+| 4. Predict            | `predict_tensorflow.py`      | Scores a Lichess account over its recent games (mean score), lists the most suspicious games, and reports timing and accuracy statistics. It can also score a single game.                                 |
 
 ## Achieved so far
 
-### Data correctness
+### Data
 
-- **Real move times.** Think time is now computed from Lichess `[%clk]`
-  annotations plus the increment. Before, times were generated randomly.
-- **PGN parsing fixed.** Black move numbers (`1...`) were being counted as
-  moves, which assigned moves to the wrong player. 300 of the 4,732
-  vocabulary entries were these artefacts.
-- **Game results fixed.** Every game used to be recorded as a loss.
-- **Engine annotations removed.** Lichess's own verdicts (`?!`, `??`) are
-  stripped from moves, so the model can't learn from them.
-- **Real cheaters.** The old "cheater" list was 30 Lichess **BOT** accounts,
-  which are engines playing openly, not human cheaters. It has been replaced
-  with 309 human accounts flagged for fair-play violations. 9 players on the
-  old honest list turned out to be flagged as well.
+- **Real move times** from Lichess `[%clk]` annotations. They used to be
+  generated randomly.
+- **Engine accuracy per move:** the share of winning chance each move gave
+  away, computed from Lichess's `[%eval]` annotations. This is the same model
+  behind Lichess's accuracy score.
+- **PGN parsing fixed:** black move numbers (`1...`) had been counted as moves,
+  so moves were attributed to the wrong player. Game results were all
+  recorded as losses. Lichess's `?!`/`??` annotations were leaking into the
+  move tokens.
+- **Real cheaters:** the original 30 "cheaters" were BOT accounts. They've been
+  replaced with 309 human accounts flagged for fair-play violations, and 9
+  players on the old honest list turned out to be flagged too.
+- **Larger dataset:** 768 players and 42,246 games, up from 100 players and
+  5,468 games.
 
-### Honest evaluation
+### Evaluation
 
-- **Player-level split.** Before, the same player's games appeared in both
-  training and test, so the model could memorise players.
-- **Class weighting** during training.
-- **Metrics for the cheater class:** precision, recall, F1, balanced accuracy
-  and a confusion matrix, all shown next to the accuracy of always answering
-  "honest". Before, accuracy was computed with the wrong Keras metric and was
-  always 0.
-- **Consistent time encoding.** Training and prediction now share the same
-  encoders (log-scaled seconds). The old per-game rescaling erased speed and
-  consistency.
-- **BatchNorm momentum set to 0.9.** With the default, the saved model's
-  predictions were squashed toward "honest".
+- Train, validation and test sets are split by player, so no player appears
+  in more than one set.
+- Each player gets a score: the mean of their game scores.
+- Thresholds are chosen on validation players instead of a fixed 0.5.
+- Training reports cheater-class metrics, balanced accuracy and the
+  always-"honest" baseline, separately for games and for players.
+- **Leak found and removed:** flagged players' games are analysed more often
+  (71% vs 60%), probably because suspicious opponents request analysis. The
+  share of analysed games alone separates the classes (AUC 0.63), so the
+  production model trains and scores on analysed games only.
+
+### Model and predictor
+
+- Each move is encoded as 4 features (is_move, log think time, has_eval,
+  log eval loss), with a masked average over the moves, so the model can
+  learn averages such as mean accuracy.
+- The production model has about 20k parameters, down from 1.5M, and trains
+  in about a minute.
+- Early stopping now watches validation AUC.
+- The predictor can score a whole account and refuses to give a verdict on
+  fewer than 10 analysed games.
+- The rule-of-thumb "risk factors" were replaced with real timing and
+  accuracy statistics.
 
 ### Project hygiene
 
-- Missing dependencies added: `tensorboard`, `tables`, `python-dotenv`.
-- Docs corrected: there's no attention layer, and the "85–90% accuracy" claim
-  was removed because nobody measured it.
+- No secrets in git history. Missing dependencies were added (`tensorboard`,
+  `tables`, `python-dotenv`).
+- Docs were rewritten to match the code. The unmeasured "85–90% accuracy"
+  claim and the nonexistent attention layer were removed.
 
 ## Current results
 
-Dataset: 50 flagged and 50 honest players, 5,468 rated rapid games.
-Split: 63 training players, 17 validation, 20 test (8 cheaters).
+Dataset: 307 flagged and 461 honest players, 42,246 rated rapid games, 64%
+of them analysed. The table shows the mean ± standard deviation over 3
+player-level splits (seeds 42, 7 and 123).
 
-| Level                        | AUC      | Notes                                                                                                                    |
-| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Single game                  | 0.65     | Balanced accuracy 0.54. At the 0.5 cut-off it flags 86% of honest games, so 0.5 is the wrong threshold for this model.   |
-| Player (mean of their games) | **0.90** | The top 5 are all cheaters, and 6 of the 8 cheaters rank in the top 8. Only 20 players, so treat this as a rough figure. |
+| Configuration                        | Game AUC | Player AUC        | Player balanced accuracy | Params | Train time |
+| ------------------------------------ | -------- | ----------------- | ------------------------ | ------ | ---------- |
+| Features only, analysed games **(production)** | 0.715    | **0.841 ± 0.008** | 0.76                     | 20k    | < 1 min    |
+| Features only, all games             | 0.711    | 0.881 ± 0.030     | 0.81                     | 20k    | < 1 min    |
+| Moves + features, analysed games     | 0.704    | 0.834 ± 0.011     | 0.77                     | 300k   | ~8 min     |
+| Moves + features, all games          | 0.711    | 0.883 ± 0.019     | 0.80                     | 300k   | ~15–40 min |
 
-For comparison, the earlier run on the bot dataset scored 0.78 per game. That
-result doesn't mean much, because telling bots from humans is a much easier
-problem than catching human cheaters.
+How to read this:
 
-The model **memorises training players**: training recall rises to 0.92
-while validation AUC drifts from 0.65 down to 0.54. Early stopping keeps the
-epoch-4 weights.
+- **The move tokens add nothing.** Models with and without them score within
+  noise of each other.
+- **The "all games" models score higher partly because of the leak.** Whether
+  a game was analysed depends on opponents, not on the player. The
+  analysed-only figure (0.84) is the honest one.
+- **Simple baselines to beat:** mean eval loss alone gives a player AUC of
+  0.75 (flagged players lose 1.81% win chance per move vs 2.30% for honest
+  players), and median think time alone gives 0.63. The model beats both.
+
+The production model (seed 42) scores a test-player AUC of 0.84. At its
+validation-chosen threshold it flags 36 of 54 test cheaters (67%) and 12 of
+99 honest players (12%).
 
 ## Known limitations
 
-- **Small sample.** Only 100 of the 770 listed players have been downloaded,
-  so the test set has 8 cheaters.
+- **False positives are too high for real use.** About 1 in 8 honest players
+  is flagged at the current threshold. A real anti-cheat system needs a much
+  lower false-positive rate and should treat this score as a reason to
+  review an account, not as a verdict.
 - **Labels are noisy.** "Not flagged" doesn't prove someone is honest, and a
   flagged account's older games may come from before it started cheating.
-- **Scores are uncalibrated.** Single-game scores sit in a narrow band, so a
-  fixed 0.5 threshold doesn't work.
-- **Single-game predictions only.** `predict_tensorflow.py` doesn't combine
-  scores across a player's games yet.
-- **Rule-of-thumb risk factors.** Some of the "risk factors" in
-  `predict_tensorflow.py` don't measure anything meaningful. For example,
-  "consistent move lengths" measures how many characters the move notation
-  has.
-- **Model size and data size don't match.** The model has about 1.5M
-  parameters but only about 60 training players, which explains the
-  memorisation.
-- **Outdated docs.** `HDF5_FORMAT_GUIDE.md` still describes the
-  `convert_to_hdf5.py` path, and `FIXES_SUMMARY.md` describes earlier fixes.
-  Both predate this work.
+- **Rapid only.** Blitz and bullet aren't downloaded.
+- **No position difficulty.** The model sees how long a move took and how
+  good it was, but not how hard the position was. Quick, perfect moves in
+  complicated positions are the classic sign of engine use.
+- **Mean aggregation.** Averaging over games dilutes players who only cheat
+  in some of their games.
+- **Outdated docs.** `HDF5_FORMAT_GUIDE.md` and `FIXES_SUMMARY.md` describe
+  the old pipeline.
 
 ## Next steps (in priority order)
 
-1. **Download more players.** Lists of 309 flagged and 461 honest players
-   are ready. About 300 of each takes roughly 1 hour at about 6 seconds per
-   player. `collect_flagged_players.py` can find more flagged accounts: the
-   crawl found 897, and it adds 300 by default (`--max-flagged`).
-2. **Score at the player level.** Report per-player AUC during training, and
-   add a "score this account over N games" mode to the predictor.
-3. **Choose the threshold on validation players** instead of using 0.5, for
-   example by targeting a fixed false-positive rate for honest players.
-4. **Reduce overfitting.** Try a smaller model, stronger dropout, or fewer
-   epochs, and compare validation AUC across a few seeds.
-5. **Add stronger features.** Engine evaluations (`[%eval]`) are already
-   requested from Lichess but thrown away. Comparing a player's moves with
-   the engine's choices (centipawn loss) is the standard cheating signal.
-6. **Replace the rule-of-thumb risk factors** with real timing statistics,
-   such as the spread of think times and the share of fast moves in complex
-   positions.
+1. **More flagged players.** The crawl found 897 flagged accounts, but only
+   300 were used. Run `collect_flagged_players.py --max-flagged 900` (and
+   delete `data/opponents_cache.json` to crawl further), then run
+   `download_dataset.py`. More cheaters is the cheapest way to improve the
+   model.
+2. **Position difficulty features.** Add the eval swing of the position, the
+   number of legal moves, or whether the best move was a capture or a check.
+   This lets the model weigh accuracy against difficulty and time.
+3. **Better account aggregation.** Try the top-k or a high percentile of game
+   scores instead of the mean, so the model can catch players who cheat in
+   only some of their games.
+4. **Choose the operating threshold for a target false-positive rate**, for
+   example at most 5% of honest players flagged, and report the recall at
+   that point.
+5. **Add blitz games** and a time-control feature.
+6. **Tests.** Unit tests for the PGN parser (clock times, eval losses, move
+   numbers) and a small end-to-end training test.
 7. **Tidy the docs.** Update or remove `HDF5_FORMAT_GUIDE.md` and
    `FIXES_SUMMARY.md`.
 
@@ -125,11 +147,15 @@ epoch-4 weights.
 
 ```bash
 pip install -r requirements.txt
-python collect_flagged_players.py      # optional: refresh the player lists
-python fetch_games.py                  # option 5, or sample players as below
-python train_tensorflow.py
+python collect_flagged_players.py   # optional: refresh the player lists
+python download_dataset.py          # ~80 minutes; resumable
+python train_tensorflow.py          # production configuration
 ```
 
-The current run downloaded a seeded random sample of 50 players from each
-list (`random.Random(42)`, 50 games per player). The earlier bot-based data
-is kept locally in `data/old_bot_dataset/`, which git ignores.
+To reproduce the comparison table, run `train_tensorflow.py` with
+`--split-seed 42`, `7` and `123`, each with and without `--with-moves` and
+`--all-games`.
+
+Older datasets are kept locally, and ignored by git, in
+`data/old_bot_dataset/` (BOT accounts as cheaters) and
+`data/sample100_no_evals/` (100 players, no engine evals).
