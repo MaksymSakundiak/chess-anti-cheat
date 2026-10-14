@@ -1,0 +1,39 @@
+# --- Secrets (never commit these) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Large data and trained models ---
+# GitHub rejects files over 100 MB. Delete a line below if you want to
+# publish a small sample dataset or a small trained model.
+data/
+*.pgn
+*.pgn.zst
+*.csv
+*.npy
+*.npz
+*.h5
+*.keras
+*.pt
+*.pth
+*.ckpt
+saved_model/
+logs/
+runs/
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
