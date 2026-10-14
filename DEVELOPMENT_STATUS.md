@@ -71,8 +71,8 @@ noise, and 0.84 is the reliable estimate.
 
 ### Project hygiene
 
-- No secrets in git history. Missing dependencies were added (`tensorboard`,
-  `tables`, `python-dotenv`).
+- Missing dependencies were added (`tensorboard`, `tables`,
+  `python-dotenv`).
 - Docs were rewritten to match the code. The unmeasured "85–90% accuracy"
   claim and the nonexistent attention layer were removed.
 
