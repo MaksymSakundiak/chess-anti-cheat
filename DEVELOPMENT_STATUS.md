@@ -16,16 +16,17 @@ cheaters. The main bottleneck is the amount of data, not the code.
 
 ## Current pipeline
 
-| Step | Script | What it does |
-|---|---|---|
-| 1. Build player lists | `collect_flagged_players.py` | Crawls the opponents of the honest players and looks them up on Lichess. Accounts marked `tosViolation` become cheaters; unflagged opponents from the same pool become honest players. It also removes BOT and closed accounts from both lists. |
-| 2. Download games | `fetch_games.py` (menu option 5) | Downloads rated rapid games per player with clock data, and saves each player's moves and think times to `data/*.h5`. |
-| 3. Train | `train_tensorflow.py` | Splits train/validation/test **by player**, builds the vocabulary from training players only, weights the classes, trains, and reports metrics for the cheater class. |
-| 4. Predict | `predict_tensorflow.py` | Scores one player's moves and times in a single game. |
+| Step                  | Script                           | What it does                                                                                                                                                                                                                                    |
+| --------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Build player lists | `collect_flagged_players.py`     | Crawls the opponents of the honest players and looks them up on Lichess. Accounts marked `tosViolation` become cheaters; unflagged opponents from the same pool become honest players. It also removes BOT and closed accounts from both lists. |
+| 2. Download games     | `fetch_games.py` (menu option 5) | Downloads rated rapid games per player with clock data, and saves each player's moves and think times to `data/*.h5`.                                                                                                                           |
+| 3. Train              | `train_tensorflow.py`            | Splits train/validation/test **by player**, builds the vocabulary from training players only, weights the classes, trains, and reports metrics for the cheater class.                                                                           |
+| 4. Predict            | `predict_tensorflow.py`          | Scores one player's moves and times in a single game.                                                                                                                                                                                           |
 
 ## Achieved so far
 
 ### Data correctness
+
 - **Real move times.** Think time is now computed from Lichess `[%clk]`
   annotations plus the increment. Before, times were generated randomly.
 - **PGN parsing fixed.** Black move numbers (`1...`) were being counted as
@@ -40,6 +41,7 @@ cheaters. The main bottleneck is the amount of data, not the code.
   old honest list turned out to be flagged as well.
 
 ### Honest evaluation
+
 - **Player-level split.** Before, the same player's games appeared in both
   training and test, so the model could memorise players.
 - **Class weighting** during training.
@@ -54,8 +56,7 @@ cheaters. The main bottleneck is the amount of data, not the code.
   predictions were squashed toward "honest".
 
 ### Project hygiene
-- Secrets kept out of git history (`.env` is ignored, and the API token was
-  never pushed).
+
 - Missing dependencies added: `tensorboard`, `tables`, `python-dotenv`.
 - Docs corrected: there's no attention layer, and the "85–90% accuracy" claim
   was removed because nobody measured it.
@@ -65,9 +66,9 @@ cheaters. The main bottleneck is the amount of data, not the code.
 Dataset: 50 flagged and 50 honest players, 5,468 rated rapid games.
 Split: 63 training players, 17 validation, 20 test (8 cheaters).
 
-| Level | AUC | Notes |
-|---|---|---|
-| Single game | 0.65 | Balanced accuracy 0.54. At the 0.5 cut-off it flags 86% of honest games, so 0.5 is the wrong threshold for this model. |
+| Level                        | AUC      | Notes                                                                                                                    |
+| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Single game                  | 0.65     | Balanced accuracy 0.54. At the 0.5 cut-off it flags 86% of honest games, so 0.5 is the wrong threshold for this model.   |
 | Player (mean of their games) | **0.90** | The top 5 are all cheaters, and 6 of the 8 cheaters rank in the top 8. Only 20 players, so treat this as a rough figure. |
 
 For comparison, the earlier run on the bot dataset scored 0.78 per game. That
