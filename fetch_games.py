@@ -7,6 +7,7 @@ Fetch rated rapid chess games from Lichess API and append to existing HDF5 datas
 import os
 import time
 import json
+import re
 import pandas as pd
 import numpy as np
 import requests
@@ -16,6 +17,11 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
+
+PGN_TOKEN_RE = re.compile(r'\{[^}]*\}|\S+')
+MOVE_NUMBER_RE = re.compile(r'\d+\.(\.\.)?')
+CLOCK_RE = re.compile(r'\[%clk (\d+):(\d+):(\d+(?:\.\d+)?)\]')
+PGN_RESULTS = {'1-0', '0-1', '1/2-1/2', '*'}
 
 class LichessHDF5Fetcher:
     """Enhanced Lichess data fetcher for HDF5 format with player-level granularity"""
@@ -306,187 +312,86 @@ class LichessHDF5Fetcher:
             print(f"❌ Unexpected error for {username}: {e}")
             return []
     
-    def _process_game(self, game: Dict, username: str) -> Optional[Dict]:
-        """Process a single game and extract relevant information"""
-        try:
-            # Basic game info
-            game_id = game.get('id', '')
-            white_player = game.get('players', {}).get('white', {}).get('user', {}).get('name', '')
-            black_player = game.get('players', {}).get('black', {}).get('user', {}).get('name', '')
-            result = game.get('winner', 'draw')
-            
-            # Get moves
-            moves = game.get('moves', '')
-            if not moves:
-                return None
-            
-            # Parse moves into list
-            move_list = moves.split()
-            
-            # Determine if the fetched player is white or black
-            player_color = None
-            if white_player == username:
-                player_color = 'white'
-            elif black_player == username:
-                player_color = 'black'
-            else:
-                return None  # Player not in this game
-            
-            # Extract moves for this player
-            player_moves = []
-            for i, move in enumerate(move_list):
-                if (player_color == 'white' and i % 2 == 0) or (player_color == 'black' and i % 2 == 1):
-                    player_moves.append(move)
-            
-            if not player_moves:
-                return None
-            
-            # Generate move times (simplified - in real implementation you'd use actual clock data)
-            move_times = self._generate_move_times(player_moves)
-            
-            # Determine game result for this player
-            player_result = self._determine_player_result(result, player_color)
-            
-            # Determine cheating label (simplified - you'd implement your own logic)
-            label = self._determine_game_label(game, username)
-            
-            return {
-                'game_id': game_id,
-                'player_color': player_color,
-                'player_id': f'player_{game_id}_{player_color}',
-                'opponent_id': f'player_{game_id}_{"black" if player_color == "white" else "white"}',
-                'moves': ','.join(player_moves),
-                'move_times': ','.join(map(str, move_times)),
-                'result': player_result,
-                'label': label
-            }
-            
-        except Exception as e:
-            print(f"Error processing game: {e}")
-            return None
-    
-    def _generate_move_times(self, moves: List[str]) -> List[float]:
-        """Generate realistic move times based on move complexity"""
-        times = []
-        for move in moves:
-            # Simple heuristic: longer moves take more time
-            base_time = 2.0  # Base time in seconds
-            complexity_factor = len(move) * 0.5
-            random_factor = np.random.uniform(0.8, 1.2)
-            
-            # Special cases
-            if move.endswith('#'):  # Checkmate
-                time = base_time * 0.5  # Quick mate
-            elif move.endswith('+'):  # Check
-                time = base_time * 1.2
-            elif 'x' in move:  # Capture
-                time = base_time * 1.1
-            else:
-                time = base_time + complexity_factor
-                
-            times.append(time * random_factor)
-            
-        return times
-    
     def _determine_player_result(self, game_result: str, player_color: str) -> str:
-        """Determine game result for the specific player"""
-        if game_result == 'draw':
+        """Determine game result for the specific player from a PGN Result header"""
+        winner = {'1-0': 'white', '0-1': 'black'}.get(game_result)
+        if winner is None:
             return 'draw'
-        elif game_result == 'white' and player_color == 'white':
-            return 'win'
-        elif game_result == 'black' and player_color == 'black':
-            return 'win'
-        else:
-            return 'loss'
+        return 'win' if winner == player_color else 'loss'
+    
+    def _parse_time_control(self, time_control: str) -> Optional[Tuple[int, int]]:
+        """Parse a PGN TimeControl header like '600+5' into (base_seconds, increment_seconds)"""
+        try:
+            base, increment = time_control.split('+')
+            return int(base), int(increment)
+        except ValueError:
+            return None  # Correspondence ('-') or malformed
     
     def _parse_pgn_game(self, pgn_text: str, username: str) -> Optional[Dict]:
-        """Parse a PGN game and extract relevant information"""
+        """Parse a PGN game, extracting this player's moves and real per-move think times"""
         try:
-            lines = pgn_text.strip().split('\n')
             game_info = {}
+            movetext_lines = []
             
-            # Parse PGN headers
-            for line in lines:
+            # Split PGN into [Key "Value"] headers and movetext
+            for line in pgn_text.strip().split('\n'):
+                line = line.strip()
                 if line.startswith('[') and line.endswith(']'):
-                    # Extract key-value from [Key "Value"] format
-                    if ' ' in line[1:-1]:
-                        key_value = line[1:-1].split(' ', 1)
-                        if len(key_value) == 2:
-                            key = key_value[0]
-                            value = key_value[1].strip('"')
-                            game_info[key] = value
+                    key_value = line[1:-1].split(' ', 1)
+                    if len(key_value) == 2:
+                        game_info[key_value[0]] = key_value[1].strip('"')
+                elif line:
+                    movetext_lines.append(line)
             
-            # Extract moves (everything after the last header)
-            moves_start = -1
-            for i, line in enumerate(lines):
-                if not line.startswith('['):
-                    moves_start = i
-                    break
-            
-            if moves_start == -1:
-                return None
-            
-            # Get moves text
-            moves_text = ' '.join(lines[moves_start:])
-            # Remove result at the end (e.g., "1-0", "0-1", "1/2-1/2")
-            moves_text = moves_text.replace(game_info.get('Result', ''), '').strip()
-            
-            # Extract individual moves
+            # Walk the movetext: moves, move numbers ("12." / "12..."), results,
+            # NAGs ($1) and comments like { [%eval 0.18] [%clk 0:10:00] }
             moves = []
-            # Split by move numbers (1., 2., etc.) and process each move
-            move_parts = moves_text.split()
-            i = 0
-            while i < len(move_parts):
-                part = move_parts[i]
-                
-                # Skip move numbers (1., 2., etc.)
-                if part.endswith('.') and part[:-1].isdigit():
-                    i += 1
+            clocks = []  # Remaining clock (seconds) after each move
+            for token in PGN_TOKEN_RE.findall(' '.join(movetext_lines)):
+                if token.startswith('{'):
+                    clock = CLOCK_RE.search(token)
+                    if clock and moves:
+                        hours, minutes, seconds = clock.groups()
+                        clocks[-1] = int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+                elif MOVE_NUMBER_RE.fullmatch(token) or token in PGN_RESULTS or token.startswith('$'):
                     continue
-                
-                # Skip annotations like { [%eval 0.18] [%clk 0:10:00] }
-                if part.startswith('{'):
-                    # Skip until we find the closing }
-                    while i < len(move_parts) and not move_parts[i].endswith('}'):
-                        i += 1
-                    if i < len(move_parts):
-                        i += 1  # Skip the closing }
-                    continue
-                
-                # Skip result at the end (1-0, 0-1, 1/2-1/2)
-                if part in ['1-0', '0-1', '1/2-1/2']:
-                    i += 1
-                    continue
-                
-                # This should be a move
-                if part and not part.startswith('$'):
-                    moves.append(part)
-                
-                i += 1
+                else:
+                    # Drop Lichess's engine annotations (?!, ??, !) so tokens are plain SAN
+                    moves.append(token.rstrip('?!'))
+                    clocks.append(None)
             
             # Determine if the fetched player is white or black
-            white_player = game_info.get('White', '')
-            black_player = game_info.get('Black', '')
-            player_color = None
-            
-            if white_player == username:
+            white_player = game_info.get('White', '').lower()
+            black_player = game_info.get('Black', '').lower()
+            if white_player == username.lower():
                 player_color = 'white'
-            elif black_player == username:
+            elif black_player == username.lower():
                 player_color = 'black'
             else:
                 return None  # Player not in this game
             
-            # Extract moves for this player (only their moves)
+            # Real move times need clock data on every move and a known increment
+            time_control = self._parse_time_control(game_info.get('TimeControl', ''))
+            if time_control is None or not moves or None in clocks:
+                return None
+            base_time, increment = time_control
+            
+            # Extract this player's moves and how long each took:
+            # time spent = clock before the move - clock after the move + increment.
+            # Lichess doesn't run the clock for each side's first move, so it counts as 0.
+            first_index = 0 if player_color == 'white' else 1
             player_moves = []
-            for i, move in enumerate(moves):
-                if (player_color == 'white' and i % 2 == 0) or (player_color == 'black' and i % 2 == 1):
-                    player_moves.append(move)
+            move_times = []
+            for i in range(first_index, len(moves), 2):
+                player_moves.append(moves[i])
+                if i < 2:
+                    move_times.append(0.0)
+                else:
+                    spent = clocks[i - 2] - clocks[i] + increment
+                    move_times.append(round(max(spent, 0.0), 2))
             
             if not player_moves:
                 return None
-            
-            # Generate move times (simplified)
-            move_times = self._generate_move_times(player_moves)
             
             # Determine game result for this player
             result = game_info.get('Result', '')
@@ -496,6 +401,8 @@ class LichessHDF5Fetcher:
             label = self._determine_game_label_from_pgn(game_info, player_moves, username)
             
             return {
+                'game_id': game_info.get('Site', '').rsplit('/', 1)[-1],
+                'username': username,
                 'player_color': player_color,
                 'moves': ','.join(player_moves),
                 'move_times': ','.join(map(str, move_times)),
@@ -526,41 +433,6 @@ class LichessHDF5Fetcher:
         # Check for move length consistency patterns
         if len(player_moves) > 5:
             move_lengths = [len(m) for m in player_moves]
-            length_std = np.std(move_lengths)
-            if length_std < 0.5:
-                return 1  # Potential cheater
-        
-        return 0  # Honest player
-    
-    def _determine_game_label(self, game: Dict, username: str) -> int:
-        """Determine if the game involves cheating (simplified logic)"""
-        # This is a simplified example - you'd implement your own logic
-        # based on your cheating detection criteria
-        
-        # Example: Check for suspicious patterns
-        moves = game.get('moves', '')
-        if not moves:
-            return 0
-        
-        move_list = moves.split()
-        
-        # Pattern-based heuristics (not tactical chess analysis)
-        if len(move_list) < 5:
-            return 0  # Not enough moves to analyze
-        
-        # Check for repetitive move patterns
-        if len(move_list) > 10:
-            move_chunks = [move_list[i:i+3] for i in range(len(move_list)-2)]
-            unique_chunks = len(set(tuple(chunk) for chunk in move_chunks))
-            pattern_variety = unique_chunks / len(move_chunks)
-            
-            # Low pattern variety might indicate engine usage
-            if pattern_variety < 0.3:
-                return 1  # Potential cheater
-        
-        # Check for move length consistency patterns
-        if len(move_list) > 5:
-            move_lengths = [len(m) for m in move_list]
             length_std = np.std(move_lengths)
             if length_std < 0.5:
                 return 1  # Potential cheater

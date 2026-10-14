@@ -55,32 +55,6 @@ class ChessDataConverter:
         else:
             return "draw"  # Default to draw for incomplete games
     
-    def generate_move_times(self, moves: List[str]) -> List[float]:
-        """Generate realistic move times based on move complexity"""
-        if not moves:
-            return []
-            
-        times = []
-        for move in moves:
-            # Simple heuristic: longer moves take more time
-            base_time = 2.0  # Base time in seconds
-            complexity_factor = len(move) * 0.5
-            random_factor = np.random.uniform(0.8, 1.2)
-            
-            # Special cases
-            if move.endswith('#'):  # Checkmate
-                time = base_time * 0.5  # Quick mate
-            elif move.endswith('+'):  # Check
-                time = base_time * 1.2
-            elif 'x' in move:  # Capture
-                time = base_time * 1.1
-            else:
-                time = base_time + complexity_factor
-                
-            times.append(time * random_factor)
-            
-        return times
-    
     def create_player_records(self, game_id: str, moves_str: str, label: int) -> List[Dict]:
         """Create player-level records from a game"""
         white_moves, black_moves = self.parse_moves_to_players(moves_str)
@@ -89,7 +63,6 @@ class ChessDataConverter:
         
         # White player record
         if white_moves:
-            white_times = self.generate_move_times(white_moves)
             white_result = self.determine_game_result(white_moves + black_moves)
             
             records.append({
@@ -98,14 +71,13 @@ class ChessDataConverter:
                 'player_id': f'player_{game_id}_white',
                 'opponent_id': f'player_{game_id}_black',
                 'moves': ','.join(white_moves),
-                'move_times': white_times,
+                'move_times': [],  # CSV input has no clock data; use fetch_games.py for real times
                 'result': white_result,
                 'label': label
             })
         
         # Black player record
         if black_moves:
-            black_times = self.generate_move_times(black_moves)
             black_result = self.determine_game_result(white_moves + black_moves)
             # Invert result for black
             if black_result == 'win':
@@ -119,7 +91,7 @@ class ChessDataConverter:
                 'player_id': f'player_{game_id}_black',
                 'opponent_id': f'player_{game_id}_white',
                 'moves': ','.join(black_moves),
-                'move_times': black_times,
+                'move_times': [],  # CSV input has no clock data; use fetch_games.py for real times
                 'result': black_result,
                 'label': label
             })

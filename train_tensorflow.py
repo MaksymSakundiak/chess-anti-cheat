@@ -87,7 +87,7 @@ def main():
     # Load data
     hdf5_file = "data/combined_games.h5"
     if not os.path.exists(hdf5_file):
-        print(f"❌ {hdf5_file} not found. Please run convert_to_hdf5.py first.")
+        print(f"❌ {hdf5_file} not found. Please run fetch_games.py first.")
         return
     
     df = pd.read_hdf(hdf5_file, key='chess_data')

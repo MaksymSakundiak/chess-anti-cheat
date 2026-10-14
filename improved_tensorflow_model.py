@@ -18,7 +18,7 @@ from tensorflow.keras.callbacks import (
 )
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import BinaryCrossentropy
-from tensorflow.keras.metrics import Accuracy, Precision, Recall, AUC
+from tensorflow.keras.metrics import BinaryAccuracy, Precision, Recall, AUC
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -114,7 +114,7 @@ class AdvancedChessClassifier:
         loss = BinaryCrossentropy(label_smoothing=0.1)
         
         metrics = [
-            Accuracy(name='accuracy'),
+            BinaryAccuracy(name='accuracy'),
             Precision(name='precision'),
             Recall(name='recall'),
             AUC(name='auc')
