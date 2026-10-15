@@ -19,6 +19,8 @@ import os
 import random
 import time
 
+import pandas as pd
+
 from fetch_games import LichessHDF5Fetcher
 
 PROGRESS_FILE = 'data/download_progress.json'
@@ -36,6 +38,38 @@ def save_progress(done: set):
         json.dump(sorted(done), f)
 
 
+def sync_labels(fetcher: LichessHDF5Fetcher):
+    """Make saved games agree with the current player lists.
+
+    collect_flagged_players.py moves honest players who have since been flagged
+    to the cheater list and drops closed accounts, but their downloaded games
+    keep the old label. Relabel them, and drop players on neither list (closed
+    accounts, often closed for cheating, so their 'honest' label is unreliable).
+    """
+    frames = [pd.read_hdf(path, key='chess_data')
+              for path in (fetcher.cheater_hdf5, fetcher.honest_hdf5) if os.path.exists(path)]
+    if not frames:
+        return
+    df = pd.concat(frames, ignore_index=True)
+    cheaters = {p.lower() for p in fetcher.get_cheater_players()}
+    honest = {p.lower() for p in fetcher.get_honest_players()}
+    user = df['username'].str.lower()
+    new_label = user.map(lambda u: 1 if u in cheaters else 0 if u in honest else -1)
+
+    relabelled = (new_label >= 0) & (new_label != df['label'])
+    dropped = new_label < 0
+    if not relabelled.any() and not dropped.any():
+        return
+    print(f"🔁 Syncing saved games with the player lists: "
+          f"{user[relabelled].nunique()} players relabelled ({int(relabelled.sum())} games), "
+          f"{user[dropped].nunique()} players no longer listed dropped ({int(dropped.sum())} games)")
+    df['label'] = new_label
+    df = df[~dropped]
+    df[df['label'] == 1].to_hdf(fetcher.cheater_hdf5, key='chess_data', mode='w', format='table')
+    df[df['label'] == 0].to_hdf(fetcher.honest_hdf5, key='chess_data', mode='w', format='table')
+    fetcher._update_combined_dataset()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--games-per-player', type=int, default=50)
@@ -51,6 +85,7 @@ def main():
     if args.fresh and os.path.exists(PROGRESS_FILE):
         os.remove(PROGRESS_FILE)
     done = load_progress()
+    sync_labels(fetcher)
 
     # Seeded shuffle, so --max-players picks the same players on every run
     rng = random.Random(42)

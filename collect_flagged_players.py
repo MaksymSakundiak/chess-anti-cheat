@@ -211,8 +211,8 @@ def main():
     fetcher.add_cheater_players(honest_now_flagged + new_cheaters)
     fetcher.remove_honest_players(remove_honest)
     fetcher.add_honest_players(new_honest)
-    print("\n✅ Player lists updated. Next: delete data/*.h5, run fetch_games.py (option 5), "
-          "then train_tensorflow.py")
+    print("\n✅ Player lists updated. Next: python download_dataset.py, "
+          "then python train_tensorflow.py")
 
 
 if __name__ == '__main__':
