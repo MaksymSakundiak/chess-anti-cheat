@@ -17,13 +17,17 @@ trained on accounts Lichess has flagged for fair-play violations.
 
 ## 📈 Current Performance
 
-768 players (307 flagged, 461 honest), 42,246 rated rapid games. Averaged over
-3 player-level splits, about 154 test players each:
+2,526 players (1,182 flagged, 1,344 honest), 140,112 rated rapid games, of
+which 73,698 are analysed. Averaged over 3 player-level splits, about 505 test
+players each:
 
 | Level | AUC |
 |---|---|
-| Single game | 0.72 |
-| Player (mean score over their analysed games) | 0.84 |
+| Single game | 0.75 |
+| Player (mean score over their analysed games) | 0.88 |
+
+The shipped model flags 9% of honest test players and catches 67% of
+cheaters.
 
 A single game carries little evidence; judge accounts, not games. See
 [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) for the full comparison and
@@ -97,7 +101,7 @@ python collect_flagged_players.py
 ### 2. Download games
 
 ```bash
-python download_dataset.py                    # all players, ~80 minutes
+python download_dataset.py                    # all players, ~4 hours
 python download_dataset.py --max-players 50   # 50 per class, ~10 minutes
 ```
 
@@ -182,9 +186,9 @@ python train_tensorflow.py --with-moves   # add the move-token BiLSTM branch
 python train_tensorflow.py --all-games    # include games without engine analysis
 ```
 
-`--all-games` scores higher (player AUC ≈ 0.88), but partly because flagged
-players' games are analysed more often, which reflects their opponents'
-suspicion rather than their play.
+`--all-games` scores higher, but partly because flagged players' games are
+analysed more often, which reflects their opponents' suspicion rather than
+their play.
 
 ## 📈 Performance Metrics
 

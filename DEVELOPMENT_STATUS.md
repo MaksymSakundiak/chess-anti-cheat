@@ -1,26 +1,26 @@
 # Development Status
 
-_Last updated: 2026-10-14_
+_Last updated: 2026-10-15_
 
 ## Summary
 
-The detector now works at the level that matters, whole accounts. On test
+The detector works at the level that matters, whole accounts. On test
 players it never saw in training, it ranks flagged accounts above honest ones
-with an **AUC of 0.84**, and it judges a single game with an AUC of 0.72.
-These results are averaged over 3 player-level splits of 768 players, with
-about 154 test players per split.
+with an **AUC of 0.88**, and it judges a single game with an AUC of 0.75.
+These results are averaged over 3 player-level splits of 2,526 players, with
+about 505 test players per split.
 
-Most of the improvement came from adding engine accuracy as a feature and
-from a much larger dataset. Feeding the move tokens to the model added
-nothing. An earlier figure of 0.90 came from only 20 test players; it was
-noise, and 0.84 is the reliable estimate.
+The gains came from engine accuracy as a feature and from more data. Going
+from 768 to 2,526 players raised the account AUC from 0.84 to 0.88, so more
+data is still paying off. Feeding the move tokens to the model added nothing.
+An earlier figure of 0.90 came from only 20 test players and was noise.
 
 ## Current pipeline
 
 | Step                  | Script                       | What it does                                                                                                                                                                                                 |
 | --------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1. Build player lists | `collect_flagged_players.py` | Crawls the honest players' opponents and looks them up on Lichess. Accounts marked `tosViolation` become cheaters; unflagged opponents from the same pool become honest players. Removes BOT and closed accounts. |
-| 2. Download games     | `download_dataset.py`        | Downloads 50 rated rapid games per player with clock data and engine evals. Alternates cheaters and honest players, saves every 25 players, and resumes after interruptions.                                  |
+| 2. Download games     | `download_dataset.py`        | Downloads 50 rated rapid games per player with clock data and engine evals. Alternates cheaters and honest players, saves every 25 players, resumes after interruptions, and relabels saved games when the lists change. |
 | 3. Train              | `train_tensorflow.py`        | Splits players into train/validation/test, trains on analysed games, chooses game- and player-level thresholds on validation players, and saves them to `model_meta.json`.                                  |
 | 4. Predict            | `predict_tensorflow.py`      | Scores a Lichess account over its recent games (mean score), lists the most suspicious games, and reports timing and accuracy statistics. It can also score a single game.                                 |
 
@@ -38,10 +38,10 @@ noise, and 0.84 is the reliable estimate.
   recorded as losses. Lichess's `?!`/`??` annotations were leaking into the
   move tokens.
 - **Real cheaters:** the original 30 "cheaters" were BOT accounts. They've been
-  replaced with 309 human accounts flagged for fair-play violations, and 9
+  replaced with 1,209 human accounts flagged for fair-play violations, and 9
   players on the old honest list turned out to be flagged too.
-- **Larger dataset:** 768 players and 42,246 games, up from 100 players and
-  5,468 games.
+- **Larger dataset:** 2,526 players and 140,112 games (73,698 analysed), up
+  from 100 players and 5,468 games.
 
 ### Evaluation
 
@@ -52,9 +52,10 @@ noise, and 0.84 is the reliable estimate.
 - Training reports cheater-class metrics, balanced accuracy and the
   always-"honest" baseline, separately for games and for players.
 - **Leak found and removed:** flagged players' games are analysed more often
-  (71% vs 60%), probably because suspicious opponents request analysis. The
-  share of analysed games alone separates the classes (AUC 0.63), so the
-  production model trains and scores on analysed games only.
+  (64% vs 44% in the current dataset), probably because suspicious opponents
+  request analysis. The share of analysed games alone separated the classes
+  (AUC 0.63 on the 768-player dataset), so the production model trains and
+  scores on analysed games only.
 
 ### Model and predictor
 
@@ -78,9 +79,28 @@ noise, and 0.84 is the reliable estimate.
 
 ## Current results
 
-Dataset: 307 flagged and 461 honest players, 42,246 rated rapid games, 64%
-of them analysed. The table shows the mean ± standard deviation over 3
-player-level splits (seeds 42, 7 and 123).
+### Production model, 2,526 players
+
+Dataset: 1,182 flagged and 1,344 honest players with games, 140,112 rated
+rapid games, of which 73,698 are analysed and used. Each split has about
+1,615 training and 505 test players.
+
+| Split seed | Game AUC | Player AUC | Player balanced accuracy | Cheaters caught | Honest flagged |
+| ---------- | -------- | ---------- | ------------------------ | --------------- | -------------- |
+| 7          | 0.750    | 0.891      | 0.82                     | 192 / 238 (81%) | 47 / 267 (18%) |
+| 123        | 0.755    | 0.873      | 0.78                     | 178 / 242 (74%) | 44 / 263 (17%) |
+| 42         | 0.759    | 0.872      | 0.79                     | 153 / 229 (67%) | 24 / 276 (9%)  |
+| **Mean**   | **0.754**| **0.879 ± 0.009** | **0.80**          | 74%             | 14%            |
+
+The shipped model is the seed-42 run. Its validation-chosen threshold is the
+most conservative of the three: it flags 9% of honest test players and
+catches 67% of cheaters.
+
+### Configuration comparison, 768 players
+
+The table shows the mean ± standard deviation over 3 player-level splits
+(seeds 42, 7 and 123) on the earlier 768-player dataset (307 flagged and 461
+honest players, 42,246 games).
 
 | Configuration                        | Game AUC | Player AUC        | Player balanced accuracy | Params | Train time |
 | ------------------------------------ | -------- | ----------------- | ------------------------ | ------ | ---------- |
@@ -100,14 +120,10 @@ How to read this:
   0.75 (flagged players lose 1.81% win chance per move vs 2.30% for honest
   players), and median think time alone gives 0.63. The model beats both.
 
-The production model (seed 42) scores a test-player AUC of 0.84. At its
-validation-chosen threshold it flags 36 of 54 test cheaters (67%) and 12 of
-99 honest players (12%).
-
 ## Known limitations
 
-- **False positives are too high for real use.** About 1 in 8 honest players
-  is flagged at the current threshold. A real anti-cheat system needs a much
+- **False positives are too high for real use.** 9% of honest test players
+  are flagged by the shipped model, and 14% on average across splits. A real anti-cheat system needs a much
   lower false-positive rate and should treat this score as a reason to
   review an account, not as a verdict.
 - **Labels are noisy.** "Not flagged" doesn't prove someone is honest, and a
@@ -123,11 +139,11 @@ validation-chosen threshold it flags 36 of 54 test cheaters (67%) and 12 of
 
 ## Next steps (in priority order)
 
-1. **More flagged players.** The crawl found 897 flagged accounts, but only
-   300 were used. Run `collect_flagged_players.py --max-flagged 900` (and
-   delete `data/opponents_cache.json` to crawl further), then run
-   `download_dataset.py`. More cheaters is the cheapest way to improve the
-   model.
+1. **More flagged players.** Tripling the data raised the account AUC from
+   0.84 to 0.88, so this is still the cheapest improvement. The latest crawl
+   found 1,787 flagged accounts and 1,209 are now used. Run
+   `collect_flagged_players.py --max-flagged 900` again to add the rest, then
+   `download_dataset.py` (about 6 seconds per player).
 2. **Position difficulty features.** Add the eval swing of the position, the
    number of legal moves, or whether the best move was a capture or a check.
    This lets the model weigh accuracy against difficulty and time.
@@ -148,7 +164,7 @@ validation-chosen threshold it flags 36 of 54 test cheaters (67%) and 12 of
 ```bash
 pip install -r requirements.txt
 python collect_flagged_players.py   # optional: refresh the player lists
-python download_dataset.py          # ~80 minutes; resumable
+python download_dataset.py          # ~4 hours for all 2,570 players; resumable
 python train_tensorflow.py          # production configuration
 ```
 

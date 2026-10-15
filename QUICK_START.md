@@ -15,7 +15,7 @@ LICHESS_API_TOKEN=your_token_here
 ### 2. Download games
 ```bash
 python download_dataset.py --max-players 50   # quick: 50 per class, ~10 minutes
-python download_dataset.py                    # full: all 768 players, ~80 minutes
+python download_dataset.py                    # full: all 2,570 players, ~4 hours
 ```
 Progress is saved every 25 players. If it stops, rerun the same command to
 resume.
@@ -58,7 +58,7 @@ Statistics:
   is stored in `model_meta.json`.
 - Accounts with fewer than 10 analysed rapid games get no verdict.
 - A "Suspicious" result is a reason to look at the account more closely, not
-  proof of cheating. About 1 in 8 honest test players is flagged.
+  proof of cheating. The shipped model flags 9% of honest test players.
 
 ## 📈 What the Model Looks At
 
@@ -90,8 +90,8 @@ python train_tensorflow.py --all-games        # include unanalysed games (inflat
 (TensorFlow 2.20+ doesn't include TensorBoard).
 
 **Rate limited by Lichess**: `collect_flagged_players.py` waits and retries.
-`download_dataset.py` skips a rate-limited player (this didn't happen in the
-full 768-player download). A token in `.env` raises the limits.
+`download_dataset.py` skips a player whose download fails (under 2% of
+players in the 2,570-player download). A token in `.env` raises the limits.
 
 **Download interrupted**: rerun `python download_dataset.py`. It skips
 players that are already done.
@@ -100,7 +100,7 @@ players that are already done.
 
 On test players never seen in training, averaged over 3 player splits:
 
-- **Accounts:** AUC 0.84
-- **Single games:** AUC 0.72
+- **Accounts:** AUC 0.88
+- **Single games:** AUC 0.75
 
 See [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) for details and next steps.
